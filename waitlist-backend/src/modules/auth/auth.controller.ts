@@ -7,7 +7,9 @@ import {
   Param,
   UseGuards,
   Request,
+  Res,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { CreateOrganizerDto } from './dto/create-organizer.dto';
 import { LoginDto } from './dto/login.dto';
@@ -18,6 +20,42 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  // Google OAuth routes
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // Initiates Google OAuth flow
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Request() req: any, @Res() res: any) {
+    // Handle successful Google OAuth callback
+    const user = await this.authService.handleOAuthLogin(req.user, 'google');
+    
+    // Redirect to frontend with token
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/auth/success?token=${user.accessToken}`);
+  }
+
+  // GitHub OAuth routes
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  async githubAuth() {
+    // Initiates GitHub OAuth flow
+  }
+
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  async githubCallback(@Request() req: any, @Res() res: any) {
+    // Handle successful GitHub OAuth callback
+    const user = await this.authService.handleOAuthLogin(req.user, 'github');
+    
+    // Redirect to frontend with token
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/auth/success?token=${user.accessToken}`);
+  }
 
   @Post('signup')
   async signup(@Body() createOrganizerDto: CreateOrganizerDto) {
@@ -30,12 +68,12 @@ export class AuthController {
   }
 
   @Post('social/google')
-  async googleAuth(@Body() socialAuthDto: SocialAuthDto) {
+  async googleTokenAuth(@Body() socialAuthDto: SocialAuthDto) {
     return this.authService.validateGoogleAuth(socialAuthDto.token);
   }
 
   @Post('social/github')
-  async githubAuth(@Body() socialAuthDto: SocialAuthDto) {
+  async githubTokenAuth(@Body() socialAuthDto: SocialAuthDto) {
     return this.authService.validateGithubAuth(socialAuthDto.token);
   }
 

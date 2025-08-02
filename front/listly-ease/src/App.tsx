@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
 import GoogleCallback from "./pages/auth/callback/GoogleCallback";
 import GitHubCallback from "./pages/auth/callback/GitHubCallback";
+import AuthSuccess from "./pages/auth/AuthSuccess";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/auth/callback/google" element={<GoogleCallback />} />
             <Route path="/auth/callback/github" element={<GitHubCallback />} />
+            <Route path="/auth/success" element={<AuthSuccess />} />
             <Route 
               path="/dashboard" 
               element={

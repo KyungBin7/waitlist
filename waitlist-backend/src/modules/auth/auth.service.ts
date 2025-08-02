@@ -404,4 +404,24 @@ export class AuthService {
     return { accessToken };
   }
 
+  /**
+   * Handle OAuth login from Passport strategies
+   * This method is called by OAuth callback routes
+   */
+  async handleOAuthLogin(userProfile: any, provider: 'google' | 'github') {
+    const { email, googleId, githubId } = userProfile;
+    
+    if (!email) {
+      throw new UnauthorizedException(`No email found in ${provider} profile`);
+    }
+
+    const providerId = provider === 'google' ? googleId : githubId;
+    
+    if (!providerId) {
+      throw new UnauthorizedException(`No ${provider} ID found in profile`);
+    }
+
+    return this.findOrCreateOrganizerBySocial(email, provider, providerId.toString());
+  }
+
 }

@@ -8,9 +8,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { SocialLoginButton } from "./SocialLoginButton";
-import { useGoogleLogin } from "@react-oauth/google";
+
 import { Separator } from "@/components/ui/separator";
-import { getGitHubAuthUrl } from "@/config/oauth";
+import { getGitHubAuthUrl, getGoogleAuthUrl } from "@/config/oauth";
 
 export function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -62,34 +62,11 @@ export function SignupForm() {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
   };
 
-  const handleGoogleSignup = useGoogleLogin({
-    onSuccess: async (response) => {
-      try {
-        setSocialLoading("google");
-        // TODO: Call backend social auth endpoint with Google token
-        toast({
-          title: "Google signup",
-          description: "Google OAuth integration pending backend implementation",
-          variant: "destructive",
-        });
-      } catch (error) {
-        toast({
-          title: "Google signup failed",
-          description: error instanceof Error ? error.message : "Failed to authenticate with Google",
-          variant: "destructive",
-        });
-      } finally {
-        setSocialLoading(null);
-      }
-    },
-    onError: () => {
-      toast({
-        title: "Google signup failed",
-        description: "Failed to authenticate with Google",
-        variant: "destructive",
-      });
-    },
-  });
+  const handleGoogleSignup = () => {
+    setSocialLoading("google");
+    // Redirect to backend Google OAuth
+    window.location.href = getGoogleAuthUrl();
+  };
 
   const handleGitHubSignup = () => {
     setSocialLoading("github");
