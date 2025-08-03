@@ -10,7 +10,7 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
       clientID: configService.get<string>('GITHUB_CLIENT_ID')!,
       clientSecret: configService.get<string>('GITHUB_CLIENT_SECRET')!,
       callbackURL: configService.get<string>('GITHUB_CALLBACK_URL')!,
-      scope: ['user:email'],
+      scope: ['read:user'],
     });
   }
 
@@ -19,12 +19,12 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
     _refreshToken: string,
     profile: any,
   ): Promise<any> {
-    const { id, username, emails, photos } = profile;
+    const { id, username, displayName, emails, photos, _json } = profile;
     const user = {
       githubId: id,
-      username,
-      email: emails[0].value,
-      picture: photos[0]?.value,
+      username: username || displayName || _json?.login,
+      email: emails?.[0]?.value || _json?.email || `${username || id}@github.local`,
+      picture: photos?.[0]?.value || _json?.avatar_url,
     };
     return user;
   }
