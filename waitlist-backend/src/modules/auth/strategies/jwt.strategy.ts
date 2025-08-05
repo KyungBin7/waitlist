@@ -24,6 +24,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!organizer) {
       throw new UnauthorizedException('Invalid token');
     }
-    return organizer;
+    
+    // Include organizerId in the returned user object for controller access
+    return {
+      ...organizer,
+      organizerId: payload.organizerId,
+    };
   }
 }

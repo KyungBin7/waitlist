@@ -16,7 +16,8 @@ describe('GoogleStrategy', () => {
               const config: Record<string, string> = {
                 GOOGLE_CLIENT_ID: 'test-client-id',
                 GOOGLE_CLIENT_SECRET: 'test-client-secret',
-                GOOGLE_CALLBACK_URL: 'http://localhost:3000/auth/google/callback',
+                GOOGLE_CALLBACK_URL:
+                  'http://localhost:3000/auth/google/callback',
               };
               return config[key];
             }),
@@ -41,7 +42,7 @@ describe('GoogleStrategy', () => {
     };
 
     const done = jest.fn();
-    
+
     await strategy.validate('access-token', 'refresh-token', profile, done);
 
     expect(done).toHaveBeenCalledWith(null, {
@@ -61,7 +62,7 @@ describe('GoogleStrategy', () => {
     };
 
     const done = jest.fn();
-    
+
     await strategy.validate('access-token', 'refresh-token', profile, done);
 
     expect(done).toHaveBeenCalledWith(null, {

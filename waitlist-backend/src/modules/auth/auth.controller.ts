@@ -15,6 +15,7 @@ import { CreateOrganizerDto } from './dto/create-organizer.dto';
 import { LoginDto } from './dto/login.dto';
 import { SocialAuthDto } from './dto/social-auth.dto';
 import { LinkProviderDto } from './dto/link-provider.dto';
+import { SocialSignupDto } from './dto/social-signup.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
@@ -32,11 +33,26 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Request() req: any, @Res() res: any) {
     // Handle successful Google OAuth callback
-    const user = await this.authService.handleOAuthLogin(req.user, 'google');
-    
-    // Redirect to frontend with token
+    const result = await this.authService.handleOAuthLogin(req.user, 'google');
+
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/auth/success?token=${user.accessToken}`);
+
+    if (result.requiresSignup) {
+      // Redirect to signup page with social data
+      const params = new URLSearchParams();
+      if (result.provider) params.append('provider', result.provider);
+      if (result.email) params.append('email', result.email);
+      if (result.providerId) params.append('providerId', result.providerId);
+      if (result.profileData?.name)
+        params.append('name', result.profileData.name);
+      if (result.profileData?.picture)
+        params.append('picture', result.profileData.picture);
+
+      res.redirect(`${frontendUrl}/auth/social-signup?${params.toString()}`);
+    } else {
+      // Redirect to success page with token
+      res.redirect(`${frontendUrl}/auth/success?token=${result.accessToken}`);
+    }
   }
 
   // GitHub OAuth routes
@@ -50,16 +66,36 @@ export class AuthController {
   @UseGuards(AuthGuard('github'))
   async githubCallback(@Request() req: any, @Res() res: any) {
     // Handle successful GitHub OAuth callback
-    const user = await this.authService.handleOAuthLogin(req.user, 'github');
-    
-    // Redirect to frontend with token
+    const result = await this.authService.handleOAuthLogin(req.user, 'github');
+
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/auth/success?token=${user.accessToken}`);
+
+    if (result.requiresSignup) {
+      // Redirect to signup page with social data
+      const params = new URLSearchParams();
+      if (result.provider) params.append('provider', result.provider);
+      if (result.email) params.append('email', result.email);
+      if (result.providerId) params.append('providerId', result.providerId);
+      if (result.profileData?.username)
+        params.append('username', result.profileData.username);
+      if (result.profileData?.picture)
+        params.append('picture', result.profileData.picture);
+
+      res.redirect(`${frontendUrl}/auth/social-signup?${params.toString()}`);
+    } else {
+      // Redirect to success page with token
+      res.redirect(`${frontendUrl}/auth/success?token=${result.accessToken}`);
+    }
   }
 
   @Post('signup')
   async signup(@Body() createOrganizerDto: CreateOrganizerDto) {
     return this.authService.signup(createOrganizerDto);
+  }
+
+  @Post('social-signup')
+  async socialSignup(@Body() socialSignupDto: SocialSignupDto) {
+    return this.authService.socialSignup(socialSignupDto);
   }
 
   @Post('login')
@@ -80,9 +116,9 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getProfile(
-    @Request() req: { user: { id: string; email: string; createdAt: string } },
+    @Request() req: { user: { id: string; email: string; createdAt: string; organizerId: string } },
   ) {
-    return req.user;
+    return this.authService.getFullProfile(req.user.organizerId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -93,19 +129,40 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('link/google')
-  async linkGoogleProvider(@Request() req: any, @Body() linkProviderDto: LinkProviderDto) {
-    return this.authService.linkGoogleProvider(req.user.organizerId, linkProviderDto.token);
+  async linkGoogleProvider(
+    @Request() req: any,
+    @Body() linkProviderDto: LinkProviderDto,
+  ) {
+    return this.authService.linkGoogleProvider(
+      req.user.organizerId,
+      linkProviderDto.token,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('link/github')
-  async linkGithubProvider(@Request() req: any, @Body() linkProviderDto: LinkProviderDto) {
-    return this.authService.linkGithubProvider(req.user.organizerId, linkProviderDto.token);
+  async linkGithubProvider(
+    @Request() req: any,
+    @Body() linkProviderDto: LinkProviderDto,
+  ) {
+    return this.authService.linkGithubProvider(
+      req.user.organizerId,
+      linkProviderDto.token,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete('unlink/:provider')
-  async unlinkProvider(@Request() req: any, @Param('provider') provider: string) {
+  async unlinkProvider(
+    @Request() req: any,
+    @Param('provider') provider: string,
+  ) {
     return this.authService.unlinkProvider(req.user.organizerId, provider);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('account')
+  async deleteAccount(@Request() req: any) {
+    return this.authService.deleteAccount(req.user.organizerId);
   }
 }

@@ -14,7 +14,6 @@ jest.mock('axios');
 const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-
 describe('AuthService', () => {
   let service: AuthService;
   let jwtService: jest.Mocked<JwtService>;
@@ -176,7 +175,7 @@ describe('AuthService', () => {
           user_id: 'google-123',
         },
       };
-      
+
       mockedAxios.get.mockResolvedValue(mockGoogleResponse);
       mockOrganizerModel.findOne.mockResolvedValue(null);
       mockOrganizer.save.mockResolvedValue({
@@ -200,14 +199,14 @@ describe('AuthService', () => {
           user_id: 'google-123',
         },
       };
-      
+
       const existingOrganizer = {
         ...mockOrganizer,
         socialProviders: [],
         save: jest.fn().mockResolvedValue(mockOrganizer),
         _id: { toString: () => 'existingId' },
       };
-      
+
       mockedAxios.get.mockResolvedValue(mockGoogleResponse);
       // First call for duplicate provider check returns null
       // Second call for finding organizer by email returns existing organizer
@@ -239,7 +238,7 @@ describe('AuthService', () => {
           id: 456,
         },
       };
-      
+
       mockedAxios.get.mockResolvedValue(mockGithubResponse);
       mockOrganizerModel.findOne.mockResolvedValue(null);
       mockOrganizer.save.mockResolvedValue({
@@ -264,13 +263,11 @@ describe('AuthService', () => {
           id: 456,
         },
       };
-      
+
       const mockEmailResponse = {
-        data: [
-          { email: 'private@example.com', primary: true, verified: true },
-        ],
+        data: [{ email: 'private@example.com', primary: true, verified: true }],
       };
-      
+
       mockedAxios.get
         .mockResolvedValueOnce(mockGithubResponse)
         .mockResolvedValueOnce(mockEmailResponse);
@@ -332,9 +329,7 @@ describe('AuthService', () => {
         email: 'test@example.com',
         passwordHash: null,
         createdAt: new Date('2023-01-01T00:00:00.000Z'),
-        socialProviders: [
-          { provider: 'google', providerId: 'google123' },
-        ],
+        socialProviders: [{ provider: 'google', providerId: 'google123' }],
       };
 
       mockOrganizerModel.findById.mockResolvedValue(mockSocialOnlyOrganizer);
@@ -369,7 +364,9 @@ describe('AuthService', () => {
         save: jest.fn().mockResolvedValue(true),
       };
 
-      mockOrganizerModel.findById.mockResolvedValue(mockOrganizerWithMultipleAuth);
+      mockOrganizerModel.findById.mockResolvedValue(
+        mockOrganizerWithMultipleAuth,
+      );
 
       const result = await service.unlinkProvider('mockId', 'google');
 
@@ -378,7 +375,9 @@ describe('AuthService', () => {
         { provider: 'github', providerId: 'github456' },
       ]);
       expect(mockOrganizerWithMultipleAuth.save).toHaveBeenCalled();
-      expect(result).toEqual({ message: 'google account unlinked successfully' });
+      expect(result).toEqual({
+        message: 'google account unlinked successfully',
+      });
     });
 
     it('should throw BadRequestException when trying to unlink non-linked provider', async () => {
@@ -386,9 +385,7 @@ describe('AuthService', () => {
         _id: 'mockId',
         email: 'test@example.com',
         passwordHash: 'hashedPassword',
-        socialProviders: [
-          { provider: 'github', providerId: 'github456' },
-        ],
+        socialProviders: [{ provider: 'github', providerId: 'github456' }],
       };
 
       mockOrganizerModel.findById.mockResolvedValue(mockOrganizerWithoutGoogle);
@@ -403,12 +400,12 @@ describe('AuthService', () => {
         _id: 'mockId',
         email: 'test@example.com',
         passwordHash: null,
-        socialProviders: [
-          { provider: 'google', providerId: 'google123' },
-        ],
+        socialProviders: [{ provider: 'google', providerId: 'google123' }],
       };
 
-      mockOrganizerModel.findById.mockResolvedValue(mockOrganizerWithOnlyGoogle);
+      mockOrganizerModel.findById.mockResolvedValue(
+        mockOrganizerWithOnlyGoogle,
+      );
 
       await expect(service.unlinkProvider('mockId', 'google')).rejects.toThrow(
         'Cannot unlink the last authentication method. You must have at least one way to access your account.',
@@ -418,9 +415,9 @@ describe('AuthService', () => {
     it('should throw NotFoundException for non-existent organizer', async () => {
       mockOrganizerModel.findById.mockResolvedValue(null);
 
-      await expect(service.unlinkProvider('nonexistent', 'google')).rejects.toThrow(
-        'Organizer not found',
-      );
+      await expect(
+        service.unlinkProvider('nonexistent', 'google'),
+      ).rejects.toThrow('Organizer not found');
     });
   });
 });

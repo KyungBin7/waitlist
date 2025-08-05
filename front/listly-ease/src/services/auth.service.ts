@@ -30,6 +30,17 @@ export interface SocialLoginRequest {
   token: string;
 }
 
+export interface SocialSignupRequest {
+  email: string;
+  provider: 'google' | 'github';
+  providerId: string;
+  additionalData?: {
+    name?: string;
+    username?: string;
+    picture?: string;
+  };
+}
+
 class AuthService {
   private getDefaultErrorMessage(status: number): string {
     switch (status) {
@@ -99,6 +110,22 @@ class AuthService {
     return this.makeRequest<LoginResponse>(`/auth/social/${data.provider}`, {
       method: 'POST',
       body: JSON.stringify({ token: data.token }),
+    });
+  }
+
+  async socialSignup(data: SocialSignupRequest): Promise<LoginResponse> {
+    return this.makeRequest<LoginResponse>('/auth/social-signup', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAccount(token: string): Promise<{ message: string; deletedAt: string }> {
+    return this.makeRequest<{ message: string; deletedAt: string }>('/auth/account', {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
   }
 }

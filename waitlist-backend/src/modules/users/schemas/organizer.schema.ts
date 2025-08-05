@@ -15,11 +15,13 @@ export class Organizer {
   passwordHash?: string;
 
   @Prop({
-    type: [{
-      provider: { type: String, required: true },
-      providerId: { type: String, required: true }
-    }],
-    default: []
+    type: [
+      {
+        provider: { type: String, required: true },
+        providerId: { type: String, required: true },
+      },
+    ],
+    default: [],
   })
   socialProviders?: {
     provider: string;
@@ -34,7 +36,7 @@ export class Organizer {
       methods.push('email');
     }
     if (this.socialProviders?.length) {
-      this.socialProviders.forEach(provider => {
+      this.socialProviders.forEach((provider) => {
         if (!methods.includes(provider.provider)) {
           methods.push(provider.provider);
         }

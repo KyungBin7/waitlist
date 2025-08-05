@@ -8,7 +8,10 @@ import { HealthModule } from './modules/health';
 import { DatabaseModule } from './modules/database';
 import { AuthModule } from './modules/auth/auth.module';
 import { ServicesModule } from './modules/services/services.module';
-import { Service, ServiceSchema } from './modules/services/schemas/service.schema';
+import {
+  Service,
+  ServiceSchema,
+} from './modules/services/schemas/service.schema';
 import { ParticipantsModule } from './modules/participants/participants.module';
 import { LoggerMiddleware } from './shared/middleware/logger.middleware';
 import databaseConfig from './config/database.config';

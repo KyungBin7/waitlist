@@ -84,9 +84,11 @@ describe('AuthController', () => {
 
       authService.validateGoogleAuth.mockResolvedValue(expectedResult);
 
-      const result = await controller.googleAuth(socialAuthDto);
+      const result = await controller.googleTokenAuth(socialAuthDto);
 
-      expect(authService.validateGoogleAuth).toHaveBeenCalledWith(socialAuthDto.token);
+      expect(authService.validateGoogleAuth).toHaveBeenCalledWith(
+        socialAuthDto.token,
+      );
       expect(result).toEqual(expectedResult);
     });
   });
@@ -100,9 +102,11 @@ describe('AuthController', () => {
 
       authService.validateGithubAuth.mockResolvedValue(expectedResult);
 
-      const result = await controller.githubAuth(socialAuthDto);
+      const result = await controller.githubTokenAuth(socialAuthDto);
 
-      expect(authService.validateGithubAuth).toHaveBeenCalledWith(socialAuthDto.token);
+      expect(authService.validateGithubAuth).toHaveBeenCalledWith(
+        socialAuthDto.token,
+      );
       expect(result).toEqual(expectedResult);
     });
   });
@@ -155,9 +159,15 @@ describe('AuthController', () => {
 
       authService.linkGoogleProvider.mockResolvedValue(expectedResult);
 
-      const result = await controller.linkGoogleProvider(mockRequest, linkProviderDto);
+      const result = await controller.linkGoogleProvider(
+        mockRequest,
+        linkProviderDto,
+      );
 
-      expect(authService.linkGoogleProvider).toHaveBeenCalledWith('mockId', 'google-token');
+      expect(authService.linkGoogleProvider).toHaveBeenCalledWith(
+        'mockId',
+        'google-token',
+      );
       expect(result).toEqual(expectedResult);
     });
   });
@@ -170,9 +180,15 @@ describe('AuthController', () => {
 
       authService.linkGithubProvider.mockResolvedValue(expectedResult);
 
-      const result = await controller.linkGithubProvider(mockRequest, linkProviderDto);
+      const result = await controller.linkGithubProvider(
+        mockRequest,
+        linkProviderDto,
+      );
 
-      expect(authService.linkGithubProvider).toHaveBeenCalledWith('mockId', 'github-token');
+      expect(authService.linkGithubProvider).toHaveBeenCalledWith(
+        'mockId',
+        'github-token',
+      );
       expect(result).toEqual(expectedResult);
     });
   });
@@ -181,13 +197,18 @@ describe('AuthController', () => {
     it('should unlink provider successfully', async () => {
       const mockRequest = { user: { organizerId: 'mockId' } };
       const provider = 'google';
-      const expectedResult = { message: 'google account unlinked successfully' };
+      const expectedResult = {
+        message: 'google account unlinked successfully',
+      };
 
       authService.unlinkProvider.mockResolvedValue(expectedResult);
 
       const result = await controller.unlinkProvider(mockRequest, provider);
 
-      expect(authService.unlinkProvider).toHaveBeenCalledWith('mockId', 'google');
+      expect(authService.unlinkProvider).toHaveBeenCalledWith(
+        'mockId',
+        'google',
+      );
       expect(result).toEqual(expectedResult);
     });
   });

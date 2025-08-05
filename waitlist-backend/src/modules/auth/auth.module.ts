@@ -9,6 +9,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GitHubStrategy } from './strategies/github.strategy';
 import { Organizer, OrganizerSchema } from '../users/schemas/organizer.schema';
+import { Service, ServiceSchema } from '../services/schemas/service.schema';
+import { WaitlistParticipant, WaitlistParticipantSchema } from '../participants/schemas/participant.schema';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { Organizer, OrganizerSchema } from '../users/schemas/organizer.schema';
     }),
     MongooseModule.forFeature([
       { name: Organizer.name, schema: OrganizerSchema },
+      { name: Service.name, schema: ServiceSchema },
+      { name: WaitlistParticipant.name, schema: WaitlistParticipantSchema },
     ]),
   ],
   controllers: [AuthController],

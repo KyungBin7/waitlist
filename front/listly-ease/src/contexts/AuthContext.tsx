@@ -12,6 +12,8 @@ interface AuthContextType {
   socialLogin: (provider: 'google' | 'github', token: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  setAuthData: (token: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -65,6 +67,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  const deleteAccount = async (): Promise<void> => {
+    const currentToken = token;
+    if (!currentToken) {
+      throw new Error('No authentication token found');
+    }
+
+    await authService.deleteAccount(currentToken);
+    
+    // Clear local auth data after successful deletion
+    tokenStorage.remove();
+    setToken(null);
+    setUser(null);
+  };
+
+  const setAuthData = async (newToken: string): Promise<void> => {
+    tokenStorage.set(newToken);
+    setToken(newToken);
+    
+    // Get user profile
+    const userProfile = await authService.getProfile(newToken);
+    setUser(userProfile);
+  };
+
   const checkAuth = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     
@@ -106,6 +131,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     socialLogin,
     logout,
     checkAuth,
+    setAuthData,
+    deleteAccount,
   };
 
   return (

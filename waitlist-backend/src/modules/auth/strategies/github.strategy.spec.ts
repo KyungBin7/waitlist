@@ -16,7 +16,8 @@ describe('GitHubStrategy', () => {
               const config: Record<string, string> = {
                 GITHUB_CLIENT_ID: 'test-client-id',
                 GITHUB_CLIENT_SECRET: 'test-client-secret',
-                GITHUB_CALLBACK_URL: 'http://localhost:3000/auth/github/callback',
+                GITHUB_CALLBACK_URL:
+                  'http://localhost:3000/auth/github/callback',
               };
               return config[key];
             }),
@@ -40,7 +41,11 @@ describe('GitHubStrategy', () => {
       photos: [{ value: 'https://example.com/avatar.jpg' }],
     };
 
-    const result = await strategy.validate('access-token', 'refresh-token', profile);
+    const result = await strategy.validate(
+      'access-token',
+      'refresh-token',
+      profile,
+    );
 
     expect(result).toEqual({
       githubId: 'github-456',
@@ -58,7 +63,11 @@ describe('GitHubStrategy', () => {
       photos: [],
     };
 
-    const result = await strategy.validate('access-token', 'refresh-token', profile);
+    const result = await strategy.validate(
+      'access-token',
+      'refresh-token',
+      profile,
+    );
 
     expect(result).toEqual({
       githubId: 'github-456',

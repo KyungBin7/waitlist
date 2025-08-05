@@ -19,7 +19,9 @@ export class AppController {
   async seedDevData() {
     // Check if we're in development mode
     if (process.env.NODE_ENV === 'production') {
-      throw new BadRequestException('Seed endpoint only available in development');
+      throw new BadRequestException(
+        'Seed endpoint only available in development',
+      );
     }
 
     // Clear existing services first
@@ -35,7 +37,8 @@ export class AppController {
         description: 'Revolutionize your productivity workflow',
         slug: 'premium-app-launch',
         waitlistTitle: 'Premium App Launch',
-        waitlistDescription: 'Join thousands waiting for our revolutionary productivity app. Be among the first to experience the future of task management with AI-powered insights, seamless collaboration, and intuitive design.',
+        waitlistDescription:
+          'Join thousands waiting for our revolutionary productivity app. Be among the first to experience the future of task management with AI-powered insights, seamless collaboration, and intuitive design.',
         waitlistBackground: '#1a1a1a',
         organizerId: mockOrganizerId,
         createdAt: new Date(),
@@ -46,7 +49,8 @@ export class AppController {
         description: 'Shape the future of our platform',
         slug: 'beta-testing',
         waitlistTitle: 'Beta Testing Program',
-        waitlistDescription: 'Get exclusive early access to test new features before they\'re released. Help shape the future of our platform.',
+        waitlistDescription:
+          "Get exclusive early access to test new features before they're released. Help shape the future of our platform.",
         waitlistBackground: '#2563eb',
         organizerId: mockOrganizerId,
         createdAt: new Date(),
@@ -57,7 +61,8 @@ export class AppController {
         description: 'Master advanced techniques',
         slug: 'early-access-course',
         waitlistTitle: 'Early Access Course',
-        waitlistDescription: 'Master advanced techniques with our comprehensive online course. Limited spots available for the first cohort.',
+        waitlistDescription:
+          'Master advanced techniques with our comprehensive online course. Limited spots available for the first cohort.',
         waitlistBackground: '#059669',
         organizerId: mockOrganizerId,
         createdAt: new Date(),
@@ -69,7 +74,7 @@ export class AppController {
 
     return {
       message: 'Development seed data created successfully',
-      services: createdServices.map(service => ({
+      services: createdServices.map((service) => ({
         id: service._id.toString(),
         name: service.name,
         slug: service.slug,
