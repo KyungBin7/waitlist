@@ -35,8 +35,8 @@ out/
 .bmad-core/
 .bmad-core/**
 *bmad*
-web-bundles/expansion-packs/bmad-*
-web-bundles/agents/bmad-*
+web-bundles/
+web-bundles/**
 .claude/commands/BMad/
 
 # Serena related files
