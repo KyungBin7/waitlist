@@ -1,0 +1,51 @@
+# Node modules
+node_modules/
+*/node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+
+# BMAD related files
+.bmad-core/
+.bmad-core/**
+*bmad*
+web-bundles/expansion-packs/bmad-*
+web-bundles/agents/bmad-*
+.claude/commands/BMad/
+
+# Serena related files
+.serena/
+.serena/**
+*serena*
+add-serena.sh
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
