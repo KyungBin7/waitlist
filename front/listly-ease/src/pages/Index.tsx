@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, ArrowRight, ExternalLink, Eye } from "lucide-react";
+import { Users, ArrowRight, ExternalLink, Eye, LayoutDashboard, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { waitlistService } from "@/services/waitlist.service";
 import heroBackground from "@/assets/hero-bg.jpg";
 import premiumAppImage from "@/assets/premium-app.jpg";
@@ -12,7 +13,7 @@ import courseImage from "@/assets/course.jpg";
 interface WaitlistItem {
   id: string;
   slug: string;
-  title: string;
+  name: string;
   description: string;
   image: string;
   participantCount: number;
@@ -20,63 +21,34 @@ interface WaitlistItem {
 }
 
 const Index = () => {
-  const [waitlists, setWaitlists] = useState<WaitlistItem[]>([
-    {
-      id: "1",
-      slug: "premium-app-launch",
-      title: "Premium App Launch",
-      description: "Join thousands waiting for our revolutionary productivity app. Be among the first to experience the future of task management.",
-      image: premiumAppImage,
-      participantCount: 0,
-      category: "Productivity"
-    },
-    {
-      id: "2", 
-      slug: "beta-testing",
-      title: "Beta Testing Program",
-      description: "Get exclusive early access to test new features before they're released. Help shape the future of our platform.",
-      image: betaTestingImage,
-      participantCount: 0,
-      category: "Software"
-    },
-    {
-      id: "3",
-      slug: "early-access-course",
-      title: "Early Access Course",
-      description: "Master advanced techniques with our comprehensive online course. Limited spots available for the first cohort.",
-      image: courseImage,
-      participantCount: 0,
-      category: "Education"
-    }
-  ]);
+  const { isAuthenticated, user, logout, isLoading: authLoading } = useAuth();
+  const [waitlists, setWaitlists] = useState<WaitlistItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchParticipantCounts = async () => {
+    const fetchServices = async () => {
       try {
-        const updatedWaitlists = await Promise.all(
-          waitlists.map(async (waitlist) => {
-            try {
-              const countData = await waitlistService.getParticipantCount(waitlist.slug);
-              return {
-                ...waitlist,
-                participantCount: countData.currentParticipants
-              };
-            } catch (error) {
-              console.error(`Error fetching count for ${waitlist.slug}:`, error);
-              return waitlist; // Return original if error
-            }
-          })
-        );
-        setWaitlists(updatedWaitlists);
+        const services = await waitlistService.getAllPublicServices();
+        const mappedServices: WaitlistItem[] = services.map(service => ({
+          id: service.id,
+          slug: service.slug,
+          name: service.name,
+          description: service.description || '',
+          image: service.image || premiumAppImage, // fallback to default image
+          participantCount: service.participantCount,
+          category: service.category || 'General'
+        }));
+        setWaitlists(mappedServices);
       } catch (error) {
-        console.error('Error fetching participant counts:', error);
+        console.error('Error fetching services:', error);
+        // Fallback to empty array on error
+        setWaitlists([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchParticipantCounts();
+    fetchServices();
   }, []);
 
   return (
@@ -98,12 +70,37 @@ const Index = () => {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" asChild>
-                <Link to="/login">Organizer Login</Link>
-              </Button>
-              <Button asChild>
-                <Link to="/signup">Create Waitlist</Link>
-              </Button>
+              {authLoading ? (
+                // Show loading state while checking auth
+                <div className="h-9 w-32 bg-muted/50 rounded animate-pulse" />
+              ) : isAuthenticated ? (
+                // Show authenticated user options
+                <>
+                  <span className="text-sm text-muted-foreground">
+                    Welcome, {user?.email?.split('@')[0]}
+                  </span>
+                  <Button variant="ghost" asChild>
+                    <Link to="/dashboard">
+                      <LayoutDashboard className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" onClick={logout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                // Show login/signup options for unauthenticated users
+                <>
+                  <Button variant="ghost" asChild>
+                    <Link to="/login">Organizer Login</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/signup">Create Waitlist</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -138,7 +135,7 @@ const Index = () => {
                   <div className="relative h-48 overflow-hidden">
                     <img 
                       src={waitlist.image} 
-                      alt={waitlist.title}
+                      alt={waitlist.name}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                     <div className="absolute top-3 right-3">
@@ -150,7 +147,7 @@ const Index = () => {
                   
                   <CardHeader>
                     <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      {waitlist.title}
+                      {waitlist.name}
                     </CardTitle>
                     <CardDescription className="text-sm line-clamp-2">
                       {waitlist.description}
@@ -186,24 +183,47 @@ const Index = () => {
           </div>
 
           {/* Call to Action for Organizers */}
-          <div className="mt-16 text-center animate-slide-up">
-            <Card className="glass shadow-glass inline-block">
-              <CardContent className="py-8 px-12">
-                <h3 className="text-2xl font-bold text-foreground mb-3">
-                  Want to create your own waitlist?
-                </h3>
-                <p className="text-muted-foreground mb-6">
-                  Build anticipation for your product with beautiful waitlist pages
-                </p>
-                <Button variant="outline" size="lg" asChild>
-                  <Link to="/signup">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Start Building
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          {!authLoading && (
+            <div className="mt-16 text-center animate-slide-up">
+              <Card className="glass shadow-glass inline-block">
+                <CardContent className="py-8 px-12">
+                  {isAuthenticated ? (
+                    // Show dashboard CTA for authenticated users
+                    <>
+                      <h3 className="text-2xl font-bold text-foreground mb-3">
+                        Manage your waitlists
+                      </h3>
+                      <p className="text-muted-foreground mb-6">
+                        Go to your dashboard to create and manage your waitlist services
+                      </p>
+                      <Button variant="outline" size="lg" asChild>
+                        <Link to="/dashboard">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Go to Dashboard
+                        </Link>
+                      </Button>
+                    </>
+                  ) : (
+                    // Show signup CTA for unauthenticated users
+                    <>
+                      <h3 className="text-2xl font-bold text-foreground mb-3">
+                        Want to create your own waitlist?
+                      </h3>
+                      <p className="text-muted-foreground mb-6">
+                        Build anticipation for your product with beautiful waitlist pages
+                      </p>
+                      <Button variant="outline" size="lg" asChild>
+                        <Link to="/signup">
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          Start Building
+                        </Link>
+                      </Button>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </main>
 

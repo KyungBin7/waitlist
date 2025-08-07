@@ -88,6 +88,28 @@ export class ServicesService {
     return await this.serviceModel.findOne({ slug }).exec();
   }
 
+  async findAllPublic(): Promise<ServiceDocument[]> {
+    const services = await this.serviceModel
+      .find({})
+      .sort({ createdAt: -1 })
+      .exec();
+
+    // Add participant count to each service
+    const servicesWithCounts = await Promise.all(
+      services.map(async (service) => {
+        const participantCount = await this.getParticipantCount(
+          service._id as Types.ObjectId,
+        );
+        return {
+          ...service.toObject(),
+          participantCount,
+        };
+      }),
+    );
+
+    return servicesWithCounts as any;
+  }
+
   async update(
     id: string,
     updateServiceDto: UpdateServiceDto,

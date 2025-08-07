@@ -9,6 +9,8 @@ export interface Service {
   waitlistTitle?: string;
   waitlistDescription?: string;
   waitlistBackground?: string;
+  image?: string;
+  category?: string;
   waitlistUrl: string;
   participantCount: number;
   createdAt: string;
@@ -22,6 +24,8 @@ export interface CreateServiceRequest {
   waitlistTitle?: string;
   waitlistDescription?: string;
   waitlistBackground?: string;
+  image?: string;
+  category?: string;
 }
 
 export interface UpdateServiceRequest {
@@ -31,6 +35,8 @@ export interface UpdateServiceRequest {
   waitlistTitle?: string;
   waitlistDescription?: string;
   waitlistBackground?: string;
+  image?: string;
+  category?: string;
 }
 
 export interface WaitlistDetails {
@@ -141,6 +147,11 @@ class WaitlistService {
 
   async getParticipantCount(slug: string): Promise<{ currentParticipants: number }> {
     return this.makeRequest<{ currentParticipants: number }>(`/public/waitlists/${slug}/count`);
+  }
+
+  // Public services endpoint
+  async getAllPublicServices(): Promise<Pick<Service, 'id' | 'name' | 'description' | 'slug' | 'image' | 'category' | 'participantCount'>[]> {
+    return this.makeRequest<Pick<Service, 'id' | 'name' | 'description' | 'slug' | 'image' | 'category' | 'participantCount'>[]>('/public/services');
   }
 
   // Helper method to download CSV

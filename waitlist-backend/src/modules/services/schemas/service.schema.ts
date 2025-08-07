@@ -29,6 +29,12 @@ export class Service {
   @Prop()
   waitlistBackground?: string;
 
+  @Prop()
+  image?: string;
+
+  @Prop()
+  category?: string;
+
   @Prop({ default: Date.now })
   createdAt!: Date;
 

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ServicesService } from './services.service';
 import { ServicesController } from './services.controller';
+import { PublicServicesController } from './public-services.controller';
 import { Service, ServiceSchema } from './schemas/service.schema';
 import {
   WaitlistParticipant,
@@ -15,7 +16,7 @@ import {
       { name: WaitlistParticipant.name, schema: WaitlistParticipantSchema },
     ]),
   ],
-  controllers: [ServicesController],
+  controllers: [ServicesController, PublicServicesController],
   providers: [ServicesService],
   exports: [ServicesService],
 })

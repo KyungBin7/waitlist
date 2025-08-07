@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { waitlistService, CreateServiceRequest } from "@/services/waitlist.service";
@@ -25,6 +26,8 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
     waitlistTitle: "",
     waitlistDescription: "",
     waitlistBackground: "#ffffff",
+    image: "",
+    category: "",
   });
 
   const handleInputChange = (field: keyof CreateServiceRequest, value: string) => {
@@ -47,6 +50,19 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
       }));
     }
   };
+  const categoryOptions = [
+    "Productivity",
+    "Software",
+    "Education",
+    "Health & Fitness",
+    "Business",
+    "Entertainment",
+    "Social",
+    "Finance",
+    "Travel",
+    "Food & Drink",
+    "General"
+  ];
 
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
@@ -140,6 +156,41 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
               disabled={isLoading}
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="image">Service Image URL</Label>
+            <Input
+              id="image"
+              type="url"
+              placeholder="https://example.com/image.jpg"
+              value={formData.image}
+              onChange={(e) => handleInputChange('image', e.target.value)}
+              disabled={isLoading}
+            />
+            <p className="text-sm text-muted-foreground">
+              Optional: Add an image URL to display on the main page
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Select 
+              value={formData.category} 
+              onValueChange={(value) => handleInputChange('category', value)}
+              disabled={isLoading}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryOptions.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

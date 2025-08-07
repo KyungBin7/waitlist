@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
 import { HealthModule } from './modules/health';
 import { DatabaseModule } from './modules/database';
 import { AuthModule } from './modules/auth/auth.module';

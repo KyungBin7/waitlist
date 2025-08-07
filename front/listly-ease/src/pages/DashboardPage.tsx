@@ -3,7 +3,7 @@ import { DashboardStats } from "@/components/organizer/DashboardStats";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, Settings, LogOut, ExternalLink, Users, Download, Loader2 } from "lucide-react";
+import { Plus, Settings, LogOut, ExternalLink, Users, Download, Loader2, Home } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { waitlistService, Service } from "@/services/waitlist.service";
@@ -114,6 +114,12 @@ export default function DashboardPage() {
               Minimal Waitlist
             </h1>
             <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/">
+                  <Home className="h-4 w-4 mr-2" />
+                  Go Home
+                </Link>
+              </Button>
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/settings">
                   <Settings className="h-4 w-4 mr-2" />

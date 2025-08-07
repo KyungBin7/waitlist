@@ -39,4 +39,14 @@ export class CreateServiceDto {
   @IsOptional()
   @MaxLength(200)
   waitlistBackground?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
+  image?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(50)
+  category?: string;
 }

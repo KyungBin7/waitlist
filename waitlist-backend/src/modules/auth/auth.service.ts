@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import * as bcrypt from 'bcrypt';
@@ -628,7 +628,7 @@ export class AuthService {
     }
 
     // Get all services owned by this organizer
-    const userServices = await this.serviceModel.find({ organizer: organizerId });
+    const userServices = await this.serviceModel.find({ organizerId: new Types.ObjectId(organizerId) });
     const serviceIds = userServices.map(service => service._id);
 
     // Count participants before deletion
@@ -641,7 +641,7 @@ export class AuthService {
     }
 
     // Delete all services owned by this organizer
-    await this.serviceModel.deleteMany({ organizer: organizerId });
+    await this.serviceModel.deleteMany({ organizerId: new Types.ObjectId(organizerId) });
 
     // Finally, delete the organizer account
     await this.organizerModel.findByIdAndDelete(organizerId);
