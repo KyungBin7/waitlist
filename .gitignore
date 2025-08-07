@@ -30,22 +30,3 @@ dist/
 build/
 out/
 .next/
-
-# BMAD related files
-.bmad-core/
-.bmad-core/**
-*bmad*
-web-bundles/
-web-bundles/**
-.claude/commands/BMad/
-
-# Serena related files
-.serena/
-.serena/**
-*serena*
-add-serena.sh
-
-# Temporary files
-*.tmp
-*.temp
-.cache/
