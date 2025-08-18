@@ -4,6 +4,10 @@ import {
   IsOptional,
   Matches,
   MaxLength,
+  IsArray,
+  IsNumber,
+  Min,
+  Max,
 } from 'class-validator';
 
 export class CreateServiceDto {
@@ -49,4 +53,51 @@ export class CreateServiceDto {
   @IsOptional()
   @MaxLength(50)
   category?: string;
+
+  // New fields for service detail page
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
+  tagline?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(5000)
+  fullDescription?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(10)
+  icon?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  developer?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(50)
+  language?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  platform?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(50)
+  launchDate?: string;
+
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  screenshots?: string[];
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(5)
+  rating?: number;
 }

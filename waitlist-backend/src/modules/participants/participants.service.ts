@@ -66,6 +66,12 @@ export class ParticipantsService {
 
       const savedParticipant = await participant.save();
 
+      // Update the participant count in the service
+      await this.serviceModel.findByIdAndUpdate(
+        service._id,
+        { $inc: { participantCount: 1 } },
+      );
+
       return {
         message: 'Successfully joined the waitlist!',
         waitlistEntryId: (savedParticipant._id as any).toString(),

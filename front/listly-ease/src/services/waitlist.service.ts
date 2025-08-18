@@ -11,8 +11,17 @@ export interface Service {
   waitlistBackground?: string;
   image?: string;
   category?: string;
-  waitlistUrl: string;
+  tagline?: string;
+  fullDescription?: string;
+  icon?: string;
   participantCount: number;
+  developer?: string;
+  language?: string;
+  platform?: string;
+  launchDate?: string;
+  screenshots?: string[];
+  rating?: number;
+  waitlistUrl: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -26,6 +35,15 @@ export interface CreateServiceRequest {
   waitlistBackground?: string;
   image?: string;
   category?: string;
+  tagline?: string;
+  fullDescription?: string;
+  icon?: string;
+  developer?: string;
+  language?: string;
+  platform?: string;
+  launchDate?: string;
+  screenshots?: string[];
+  rating?: number;
 }
 
 export interface UpdateServiceRequest {
@@ -37,6 +55,15 @@ export interface UpdateServiceRequest {
   waitlistBackground?: string;
   image?: string;
   category?: string;
+  tagline?: string;
+  fullDescription?: string;
+  icon?: string;
+  developer?: string;
+  language?: string;
+  platform?: string;
+  launchDate?: string;
+  screenshots?: string[];
+  rating?: number;
 }
 
 export interface WaitlistDetails {

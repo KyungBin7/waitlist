@@ -35,6 +35,37 @@ export class Service {
   @Prop()
   category?: string;
 
+  // New fields for service detail page
+  @Prop()
+  tagline?: string;
+
+  @Prop()
+  fullDescription?: string;
+
+  @Prop()
+  icon?: string;
+
+  @Prop({ default: 0 })
+  participantCount!: number;
+
+  @Prop()
+  developer?: string;
+
+  @Prop()
+  language?: string;
+
+  @Prop()
+  platform?: string;
+
+  @Prop()
+  launchDate?: string;
+
+  @Prop({ type: [String], default: [] })
+  screenshots!: string[];
+
+  @Prop({ default: 0 })
+  rating!: number;
+
   @Prop({ default: Date.now })
   createdAt!: Date;
 

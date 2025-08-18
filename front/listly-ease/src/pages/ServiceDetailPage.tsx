@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,124 +6,116 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Users, ArrowLeft, Star, Download, Share2 } from "lucide-react";
 import { WaitlistJoinForm } from "@/components/waitlist/WaitlistJoinForm";
+import { Skeleton } from "@/components/ui/skeleton";
 import premiumAppImage from "@/assets/premium-app.jpg";
 import betaTestingImage from "@/assets/beta-testing.jpg";
 import courseImage from "@/assets/course.jpg";
 
+interface ServiceDetail {
+  id: string;
+  name: string;
+  title: string;
+  description: string;
+  slug: string;
+  image?: string;
+  category?: string;
+  tagline?: string;
+  fullDescription?: string;
+  icon?: string;
+  participantCount: number;
+  developer?: string;
+  language?: string;
+  platform?: string;
+  launchDate?: string;
+  screenshots: string[];
+  rating: number;
+  waitlistTitle?: string;
+  waitlistDescription?: string;
+}
+
 const ServiceDetailPage = () => {
   const { slug } = useParams();
   const [showJoinForm, setShowJoinForm] = useState(false);
+  const [service, setService] = useState<ServiceDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - in real implementation, this would come from API
-  const services = {
-    "premium-app-launch": {
-      id: "1",
-      slug: "premium-app-launch",
-      title: "Premium App Launch",
-      tagline: "Revolutionize your productivity workflow",
-      description: "Join thousands waiting for our revolutionary productivity app. Be among the first to experience the future of task management with AI-powered insights, seamless collaboration, and intuitive design.",
-      fullDescription: `Premium App is designed for modern professionals who demand excellence from their productivity tools. Our revolutionary approach combines artificial intelligence with intuitive design to create the most advanced task management system ever built.
+  useEffect(() => {
+    const fetchService = async () => {
+      if (!slug) return;
+      
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/public/services/${slug}`);
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError("Service not found");
+          } else {
+            throw new Error("Failed to fetch service");
+          }
+          return;
+        }
+        
+        const data = await response.json();
+        setService(data);
+      } catch (err) {
+        console.error("Error fetching service:", err);
+        setError("Failed to load service details");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-Key Features:
-• AI-powered task prioritization that learns from your workflow
-• Real-time collaboration with team members across the globe  
-• Advanced analytics and productivity insights
-• Seamless integration with your favorite tools
-• Beautiful, intuitive interface inspired by modern design principles
+    fetchService();
+  }, [slug]);
 
-Built by a team of experienced developers and designers, Premium App represents the next evolution in productivity software. We've spent over two years researching user behavior and building a system that truly understands how you work.
-
-Early access users will receive:
-• Lifetime discount on premium features
-• Direct access to our development team
-• Priority customer support
-• Exclusive beta testing opportunities`,
-      image: premiumAppImage,
-      icon: "PA",
-      participantCount: 523,
-      category: "Productivity",
-      developer: "Minimal Studio",
-      language: "EN",
-      platform: "Web, iOS, Android",
-      launchDate: "Q2 2024",
-      screenshots: [premiumAppImage, premiumAppImage, premiumAppImage]
-    },
-    "beta-testing": {
-      id: "2",
-      slug: "beta-testing",
-      title: "Beta Testing Program",
-      tagline: "Shape the future of our platform",
-      description: "Get exclusive early access to test new features before they're released. Help shape the future of our platform.",
-      fullDescription: `Join our exclusive Beta Testing Program and become part of the development process. As a beta tester, you'll have direct influence on feature development and user experience design.
-
-What you'll get:
-• Early access to cutting-edge features
-• Direct communication with our development team
-• Monthly feedback sessions and surveys
-• Exclusive beta tester community access
-• Recognition in our final product credits
-
-Requirements:
-• Active engagement with testing scenarios
-• Detailed feedback and bug reporting
-• Participation in weekly testing cycles
-• Basic technical knowledge preferred
-
-Our beta testing program has been instrumental in creating user-centered products. Previous beta testers have helped us identify crucial improvements and innovative features that made our products industry-leading.`,
-      image: betaTestingImage,
-      icon: "BT",
-      participantCount: 389,
-      category: "Software",
-      developer: "Tech Labs",
-      language: "EN, KR",
-      platform: "Web",
-      launchDate: "Ongoing",
-      screenshots: [betaTestingImage, betaTestingImage, betaTestingImage]
-    },
-    "early-access-course": {
-      id: "3",
-      slug: "early-access-course",
-      title: "Early Access Course",
-      tagline: "Master advanced techniques",
-      description: "Master advanced techniques with our comprehensive online course. Limited spots available for the first cohort.",
-      fullDescription: `Our Early Access Course represents months of curriculum development and expert instruction. This comprehensive program is designed for professionals looking to advance their skills and achieve mastery in their field.
-
-Course Highlights:
-• 12-week intensive program with live instruction
-• Hands-on projects with real-world applications  
-• One-on-one mentorship from industry experts
-• Exclusive networking opportunities with peers
-• Certification upon successful completion
-
-What's Included:
-• Weekly live sessions with Q&A
-• Comprehensive video library and resources
-• Private student community and forums
-• Career guidance and job placement assistance
-• Lifetime access to course materials and updates
-
-Our instructors are industry veterans with decades of combined experience. The curriculum is constantly updated to reflect the latest trends and best practices in the field.
-
-Early access participants receive special benefits including discounted pricing, priority support, and exclusive bonus content not available in the general release.`,
-      image: courseImage,
-      icon: "EC",
-      participantCount: 335,
-      category: "Education",
-      developer: "Learn Labs",
-      language: "EN",
-      platform: "Web",
-      launchDate: "March 2024",
-      screenshots: [courseImage, courseImage, courseImage]
-    }
+  // Default images for screenshots if none provided
+  const getDefaultImage = (serviceSlug?: string) => {
+    const imageMap: { [key: string]: string } = {
+      "premium-app-launch": premiumAppImage,
+      "beta-testing": betaTestingImage,
+      "early-access-course": courseImage,
+    };
+    return serviceSlug && imageMap[serviceSlug] ? imageMap[serviceSlug] : premiumAppImage;
   };
 
-  const service = services[slug as keyof typeof services];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="glass border-b border-border/50 sticky top-0 z-10">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-8 w-32" />
+            </div>
+          </div>
+        </header>
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col lg:flex-row gap-8 mb-8">
+            <div className="flex gap-6 lg:flex-1">
+              <Skeleton className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl" />
+              <div className="flex-1">
+                <Skeleton className="h-8 w-64 mb-2" />
+                <Skeleton className="h-6 w-48 mb-3" />
+                <Skeleton className="h-4 w-32 mb-4" />
+                <Skeleton className="h-10 w-40" />
+              </div>
+            </div>
+            <Skeleton className="lg:w-80 h-48" />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
-  if (!service) {
+  if (error || !service) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Service Not Found</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">
+            {error || "Service Not Found"}
+          </h1>
           <Link to="/">
             <Button variant="outline">Return Home</Button>
           </Link>
@@ -136,8 +128,8 @@ Early access participants receive special benefits including discounted pricing,
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <WaitlistJoinForm 
-          waitlistTitle={service.title}
-          waitlistDescription={service.description}
+          waitlistTitle={service.waitlistTitle || service.title}
+          waitlistDescription={service.waitlistDescription || service.description}
           onJoin={(email) => {
             console.log("User joined:", email);
             // TODO: Implement API call
@@ -146,6 +138,12 @@ Early access participants receive special benefits including discounted pricing,
       </div>
     );
   }
+
+  // Use service image or default based on slug
+  const serviceImage = service.image || getDefaultImage(service.slug);
+  const screenshots = service.screenshots && service.screenshots.length > 0 
+    ? service.screenshots 
+    : [serviceImage, serviceImage, serviceImage];
 
   return (
     <div className="min-h-screen bg-background">
@@ -173,25 +171,30 @@ Early access participants receive special benefits including discounted pricing,
           <div className="flex flex-col lg:flex-row gap-6 lg:flex-1">
             <div className="flex gap-6">
               <Avatar className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl shadow-xl">
-                <AvatarImage src={service.image} alt={service.title} />
+                <AvatarImage src={serviceImage} alt={service.title} />
                 <AvatarFallback className="text-2xl font-bold bg-gradient-primary text-primary-foreground rounded-2xl">
-                  {service.icon}
+                  {service.icon || service.title.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl lg:text-4xl font-bold text-foreground mb-2">{service.title}</h1>
-                <p className="text-lg text-muted-foreground mb-3">{service.tagline}</p>
-                <p className="text-sm text-muted-foreground mb-4">{service.developer}</p>
+                <p className="text-lg text-muted-foreground mb-3">{service.tagline || service.description}</p>
+                <p className="text-sm text-muted-foreground mb-4">{service.developer || "Independent Developer"}</p>
                 
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="flex items-center space-x-1">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <Star 
+                        key={i} 
+                        className={`h-4 w-4 ${i < Math.floor(service.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                      />
                     ))}
-                    <span className="text-sm text-muted-foreground ml-2">4.8</span>
+                    <span className="text-sm text-muted-foreground ml-2">{service.rating.toFixed(1)}</span>
                   </div>
-                  <span className="text-sm text-muted-foreground">#{service.category}</span>
+                  {service.category && (
+                    <span className="text-sm text-muted-foreground">#{service.category}</span>
+                  )}
                 </div>
                 
                 <Button 
@@ -219,18 +222,24 @@ Early access participants receive special benefits including discounted pricing,
                       <span className="font-semibold">{service.participantCount.toLocaleString()}</span>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Platform</span>
-                    <span className="text-sm font-medium">{service.platform}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Launch</span>
-                    <span className="text-sm font-medium">{service.launchDate}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Language</span>
-                    <span className="text-sm font-medium">{service.language}</span>
-                  </div>
+                  {service.platform && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Platform</span>
+                      <span className="text-sm font-medium">{service.platform}</span>
+                    </div>
+                  )}
+                  {service.launchDate && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Launch</span>
+                      <span className="text-sm font-medium">{service.launchDate}</span>
+                    </div>
+                  )}
+                  {service.language && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Language</span>
+                      <span className="text-sm font-medium">{service.language}</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -238,67 +247,79 @@ Early access participants receive special benefits including discounted pricing,
         </div>
 
         {/* Screenshots Section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-foreground mb-6">Preview</h2>
-          <div className="flex gap-4 overflow-x-auto pb-4">
-            {service.screenshots.map((screenshot, index) => (
-              <div key={index} className="flex-shrink-0 w-64 lg:w-80">
-                <div className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-lg">
-                  <img 
-                    src={screenshot} 
-                    alt={`${service.title} screenshot ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+        {screenshots && screenshots.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-6">Preview</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4">
+              {screenshots.map((screenshot, index) => (
+                <div key={index} className="flex-shrink-0 w-64 lg:w-80">
+                  <div className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-lg">
+                    <img 
+                      src={screenshot} 
+                      alt={`${service.title} screenshot ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Description Section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-foreground mb-6">About {service.title}</h2>
-          <Card className="glass">
-            <CardContent className="p-6">
-              <div className="prose prose-lg max-w-none text-foreground">
-                <div className="whitespace-pre-line leading-relaxed">
-                  {service.fullDescription}
+        {service.fullDescription && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-6">About {service.title}</h2>
+            <Card className="glass">
+              <CardContent className="p-6">
+                <div className="prose prose-lg max-w-none text-foreground">
+                  <div className="whitespace-pre-line leading-relaxed">
+                    {service.fullDescription}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Information Grid */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-foreground mb-6">Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="glass">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-foreground mb-4">Developer</h3>
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Company</p>
-                  <p className="font-medium">{service.developer}</p>
-                </div>
-              </CardContent>
-            </Card>
+            {service.developer && (
+              <Card className="glass">
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-foreground mb-4">Developer</h3>
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Company</p>
+                    <p className="font-medium">{service.developer}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             
             <Card className="glass">
               <CardContent className="p-6">
                 <h3 className="font-semibold text-foreground mb-4">Details</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Category</span>
-                    <Badge variant="secondary">{service.category}</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Platform</span>
-                    <span className="text-sm">{service.platform}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Launch Date</span>
-                    <span className="text-sm">{service.launchDate}</span>
-                  </div>
+                  {service.category && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Category</span>
+                      <Badge variant="secondary">{service.category}</Badge>
+                    </div>
+                  )}
+                  {service.platform && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Platform</span>
+                      <span className="text-sm">{service.platform}</span>
+                    </div>
+                  )}
+                  {service.launchDate && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Launch Date</span>
+                      <span className="text-sm">{service.launchDate}</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
