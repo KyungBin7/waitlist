@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,15 +7,20 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Users, ArrowLeft, Star, Download, Share2 } from "lucide-react";
 import { WaitlistJoinForm } from "@/components/waitlist/WaitlistJoinForm";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EditableField } from "@/components/ui/EditableField";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { waitlistService } from "@/services/waitlist.service";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import premiumAppImage from "@/assets/premium-app.jpg";
 import betaTestingImage from "@/assets/beta-testing.jpg";
 import courseImage from "@/assets/course.jpg";
 
 interface ServiceDetail {
   id: string;
+  organizerId?: string;
   name: string;
-  title: string;
-  description: string;
+  description?: string;
   slug: string;
   image?: string;
   category?: string;
@@ -27,18 +32,58 @@ interface ServiceDetail {
   language?: string;
   platform?: string;
   launchDate?: string;
-  screenshots: string[];
-  rating: number;
+  screenshots?: string[];
+  rating?: number;
   waitlistTitle?: string;
   waitlistDescription?: string;
+  waitlistUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const ServiceDetailPage = () => {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+  const { isAuthenticated, user, loading: authLoading, logout } = useAuth();
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [service, setService] = useState<ServiceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState(searchParams.get('edit') === 'true');
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  
+  // Check if current user can edit this service
+  const canEdit = isAuthenticated && service && user && service.organizerId === user.id;
+  
+  // Debug logging for canEdit
+  useEffect(() => {
+    console.log("=== Debug canEdit ===");
+    console.log("isAuthenticated:", isAuthenticated);
+    console.log("service:", service);
+    console.log("user:", user);
+    console.log("service.organizerId:", service?.organizerId);
+    console.log("user.id:", user?.id);
+    console.log("canEdit:", canEdit);
+    console.log("authLoading:", authLoading);
+    console.log("==================");
+  }, [isAuthenticated, service, user, canEdit, authLoading]);
+  
+  // Effect to disable edit mode if user doesn't have permission
+  useEffect(() => {
+    if (isEditMode && !canEdit && !authLoading && service) {
+      console.log("Access denied - disabling edit mode");
+      setIsEditMode(false);
+      toast({
+        title: "Access Denied",
+        description: "You can only edit services you created.",
+        variant: "destructive",
+      });
+    }
+  }, [isEditMode, canEdit, authLoading, service, toast]);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -46,6 +91,8 @@ const ServiceDetailPage = () => {
       
       try {
         setLoading(true);
+        console.log("Fetching service with slug:", slug);
+        
         const response = await fetch(`/api/public/services/${slug}`);
         
         if (!response.ok) {
@@ -58,6 +105,7 @@ const ServiceDetailPage = () => {
         }
         
         const data = await response.json();
+        console.log("Fetched service data:", data);
         setService(data);
       } catch (err) {
         console.error("Error fetching service:", err);
@@ -69,6 +117,166 @@ const ServiceDetailPage = () => {
 
     fetchService();
   }, [slug]);
+
+  const validateField = useCallback((field: string, value: any): string | null => {
+    switch (field) {
+      case 'title':
+        if (!value || value.trim().length === 0) return 'Title is required';
+        if (value.trim().length < 3) return 'Title must be at least 3 characters';
+        if (value.trim().length > 100) return 'Title must be less than 100 characters';
+        break;
+      case 'slug':
+        if (!value || value.trim().length === 0) return 'URL slug is required';
+        if (!/^[a-z0-9-]+$/.test(value)) return 'Slug must contain only lowercase letters, numbers, and hyphens';
+        break;
+      case 'tagline':
+        if (value && value.length > 200) return 'Tagline must be less than 200 characters';
+        break;
+      case 'fullDescription':
+        if (value && value.length > 5000) return 'Description must be less than 5000 characters';
+        break;
+      case 'developer':
+        if (value && value.length > 100) return 'Developer name must be less than 100 characters';
+        break;
+    }
+    return null;
+  }, []);
+
+  const autoSave = useCallback(async (updatedService: ServiceDetail) => {
+    if (!hasUnsavedChanges || isSaving || !updatedService.id) {
+      console.log("Auto-save skipped:", { hasUnsavedChanges, isSaving, hasId: !!updatedService.id });
+      return;
+    }
+    
+    try {
+      setIsSaving(true);
+      console.log("Auto-saving service:", updatedService.id);
+      
+      // Prepare update data - only include fields that exist in UpdateServiceRequest
+      const updateData = {
+        name: updatedService.name,
+        description: updatedService.description,
+        slug: updatedService.slug,
+        waitlistTitle: updatedService.waitlistTitle,
+        waitlistDescription: updatedService.waitlistDescription,
+        waitlistBackground: '#ffffff', // Default value
+        image: updatedService.image,
+        category: updatedService.category,
+        tagline: updatedService.tagline,
+        fullDescription: updatedService.fullDescription,
+        icon: updatedService.icon,
+        developer: updatedService.developer,
+        language: updatedService.language,
+        platform: updatedService.platform,
+        launchDate: updatedService.launchDate,
+        screenshots: updatedService.screenshots,
+        rating: updatedService.rating,
+      };
+      
+      console.log("Sending update data:", updateData);
+      const result = await waitlistService.updateService(updatedService.id, updateData);
+      console.log("Auto-save successful:", result);
+      
+      setHasUnsavedChanges(false);
+      
+      toast({
+        title: "Auto-saved",
+        description: "Changes saved automatically",
+        duration: 2000,
+      });
+    } catch (err) {
+      console.error("Auto-save failed:", err);
+      toast({
+        title: "Auto-save failed",
+        description: "Your changes were not saved automatically. Please save manually.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [hasUnsavedChanges, isSaving, toast]);
+
+  const handleFieldEdit = useCallback((field: string, value: any) => {
+    if (!service) return;
+    
+    // Validate the field
+    const error = validateField(field, value);
+    setValidationErrors(prev => ({
+      ...prev,
+      [field]: error || ''
+    }));
+    
+    // Update service state
+    const updatedService = {
+      ...service,
+      [field]: value
+    };
+    setService(updatedService);
+    setHasUnsavedChanges(true);
+    
+    // Trigger auto-save after a short delay
+    if (!error) {
+      setTimeout(() => autoSave(updatedService), 1000);
+    }
+  }, [service, validateField, autoSave]);
+
+  const handleSave = async () => {
+    if (!service || !service.id) {
+      console.log("Manual save skipped - no service or ID");
+      return;
+    }
+    
+    try {
+      setIsSaving(true);
+      console.log("Manual saving service:", service.id);
+      
+      // Prepare update data - only include fields that exist in UpdateServiceRequest
+      const updateData = {
+        name: service.name,
+        description: service.description,
+        slug: service.slug,
+        waitlistTitle: service.waitlistTitle,
+        waitlistDescription: service.waitlistDescription,
+        waitlistBackground: '#ffffff', // Default value
+        image: service.image,
+        category: service.category,
+        tagline: service.tagline,
+        fullDescription: service.fullDescription,
+        icon: service.icon,
+        developer: service.developer,
+        language: service.language,
+        platform: service.platform,
+        launchDate: service.launchDate,
+        screenshots: service.screenshots,
+        rating: service.rating,
+      };
+      
+      console.log("Manual save - sending update data:", updateData);
+      const updatedService = await waitlistService.updateService(service.id, updateData);
+      console.log("Manual save successful:", updatedService);
+      
+      // Update the service with the response from API
+      setService(prev => prev ? { ...prev, ...updatedService } : null);
+      setHasUnsavedChanges(false);
+      setIsEditMode(false);
+      setEditingField(null);
+      
+      toast({
+        title: "Success",
+        description: "Service updated successfully!",
+      });
+    } catch (err) {
+      console.error("Failed to save service:", err);
+      toast({
+        title: "Error",
+        description: "Failed to save service. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Default images for screenshots if none provided
   const getDefaultImage = (serviceSlug?: string) => {
@@ -156,9 +364,47 @@ const ServiceDetailPage = () => {
               <span>Back</span>
             </Link>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" asChild>
-                <Link to="/login">Organizer Login</Link>
-              </Button>
+              {isEditMode ? (
+                <>
+                  {isSaving && (
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <div className="animate-spin h-3 w-3 border border-current border-t-transparent rounded-full"></div>
+                      <span>Saving...</span>
+                    </div>
+                  )}
+                  {hasUnsavedChanges && !isSaving && (
+                    <span className="text-sm text-amber-600">Unsaved changes</span>
+                  )}
+                  <Button onClick={handleSave} size="sm" disabled={isSaving}>
+                    Save Changes
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsEditMode(false)} size="sm" disabled={isSaving}>
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {canEdit && (
+                    <Button variant="outline" onClick={() => setIsEditMode(true)} size="sm">
+                      Edit Service
+                    </Button>
+                  )}
+                  {isAuthenticated ? (
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm text-muted-foreground">
+                        Welcome, {user?.email}
+                      </span>
+                      <Button variant="ghost" size="sm" onClick={logout}>
+                        Logout
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button variant="ghost" asChild>
+                      <Link to="/login">Organizer Login</Link>
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -170,17 +416,68 @@ const ServiceDetailPage = () => {
           {/* Left: App Icon & Basic Info */}
           <div className="flex flex-col lg:flex-row gap-6 lg:flex-1">
             <div className="flex gap-6">
-              <Avatar className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl shadow-xl">
-                <AvatarImage src={serviceImage} alt={service.title} />
-                <AvatarFallback className="text-2xl font-bold bg-gradient-primary text-primary-foreground rounded-2xl">
-                  {service.icon || service.title.substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              {isEditMode && canEdit && editingField === 'image' ? (
+                <div className="w-24 h-24 lg:w-32 lg:h-32">
+                  <ImageUpload
+                    value={service.image || ''}
+                    onChange={(value) => handleFieldEdit('image', value)}
+                    className="w-full h-full"
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <Button size="sm" onClick={() => setEditingField(null)}>
+                      Done
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div 
+                  className={`relative ${isEditMode && canEdit ? 'cursor-pointer' : ''}`}
+                  onClick={() => isEditMode && canEdit && setEditingField('image')}
+                >
+                  <Avatar className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl shadow-xl">
+                    <AvatarImage src={serviceImage} alt={service.title} />
+                    <AvatarFallback className="text-2xl font-bold bg-gradient-primary text-primary-foreground rounded-2xl">
+                      {service.icon || service.title.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {isEditMode && (
+                    <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                      <span className="text-white text-sm font-medium">Click to edit</span>
+                    </div>
+                  )}
+                </div>
+              )}
               
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl lg:text-4xl font-bold text-foreground mb-2">{service.title}</h1>
-                <p className="text-lg text-muted-foreground mb-3">{service.tagline || service.description}</p>
-                <p className="text-sm text-muted-foreground mb-4">{service.developer || "Independent Developer"}</p>
+                <EditableField
+                  value={service.title || service.name}
+                  onSave={(value) => handleFieldEdit('name', value)}
+                  isEditing={isEditMode && canEdit && editingField === 'title'}
+                  onEdit={() => canEdit && setEditingField('title')}
+                  onCancel={() => setEditingField(null)}
+                  className={isEditMode && canEdit ? '' : 'hover:bg-transparent'}
+                  inputClassName="text-2xl lg:text-4xl font-bold text-foreground mb-2"
+                />
+
+                <EditableField
+                  value={service.tagline || service.description}
+                  onSave={(value) => handleFieldEdit('tagline', value)}
+                  isEditing={isEditMode && canEdit && editingField === 'tagline'}
+                  onEdit={() => canEdit && setEditingField('tagline')}
+                  onCancel={() => setEditingField(null)}
+                  className={isEditMode && canEdit ? '' : 'hover:bg-transparent'}
+                  inputClassName="text-lg text-muted-foreground mb-3"
+                />
+
+                <EditableField
+                  value={service.developer || "Independent Developer"}
+                  onSave={(value) => handleFieldEdit('developer', value)}
+                  isEditing={isEditMode && canEdit && editingField === 'developer'}
+                  onEdit={() => canEdit && setEditingField('developer')}
+                  onCancel={() => setEditingField(null)}
+                  className={isEditMode && canEdit ? '' : 'hover:bg-transparent'}
+                  inputClassName="text-sm text-muted-foreground mb-4"
+                />
                 
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="flex items-center space-x-1">
@@ -273,9 +570,16 @@ const ServiceDetailPage = () => {
             <Card className="glass">
               <CardContent className="p-6">
                 <div className="prose prose-lg max-w-none text-foreground">
-                  <div className="whitespace-pre-line leading-relaxed">
-                    {service.fullDescription}
-                  </div>
+                  <EditableField
+                    value={service.fullDescription}
+                    onSave={(value) => handleFieldEdit('fullDescription', value)}
+                    isEditing={isEditMode && canEdit && editingField === 'fullDescription'}
+                    onEdit={() => canEdit && setEditingField('fullDescription')}
+                    onCancel={() => setEditingField(null)}
+                    className={isEditMode && canEdit ? 'cursor-pointer hover:bg-muted/30 rounded p-3' : 'whitespace-pre-line leading-relaxed'}
+                    inputClassName="h-64"
+                    multiline={true}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -349,6 +653,6 @@ const ServiceDetailPage = () => {
       </main>
     </div>
   );
-};
+}
 
 export default ServiceDetailPage;

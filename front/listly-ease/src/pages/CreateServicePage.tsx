@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { ServiceForm } from "@/components/organizer/ServiceForm";
+import { SimpleServiceForm } from "@/components/organizer/SimpleServiceForm";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
 export default function CreateServicePage() {
   const navigate = useNavigate();
 
-  const handleSuccess = () => {
-    navigate("/dashboard");
+  const handleSuccess = (slug: string) => {
+    // Redirect to the service detail page in edit mode
+    navigate(`/service/${slug}?edit=true`);
   };
 
   const handleCancel = () => {
@@ -31,7 +32,7 @@ export default function CreateServicePage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-fade-in">
-          <ServiceForm onSuccess={handleSuccess} onCancel={handleCancel} />
+          <SimpleServiceForm onSuccess={handleSuccess} onCancel={handleCancel} />
         </div>
       </main>
     </div>
