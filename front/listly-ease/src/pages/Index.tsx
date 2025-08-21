@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, ArrowRight, ExternalLink, Eye, LayoutDashboard, LogOut } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Users, ArrowRight, ExternalLink, Eye, LayoutDashboard, LogOut, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { waitlistService } from "@/services/waitlist.service";
@@ -24,6 +25,11 @@ const Index = () => {
   const { isAuthenticated, user, logout, isLoading: authLoading } = useAuth();
   const [waitlists, setWaitlists] = useState<WaitlistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchInput, setSearchInput] = useState("");
+  const [animationKey, setAnimationKey] = useState(0);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -50,6 +56,28 @@ const Index = () => {
 
     fetchServices();
   }, []);
+
+  // Extract unique categories from waitlists
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(waitlists.map(w => w.category)));
+    return ['all', ...uniqueCategories.sort()];
+  }, [waitlists]);
+
+  // Filter waitlists based on search query and selected category
+  const filteredWaitlists = useMemo(() => {
+    return waitlists.filter(waitlist => {
+      const matchesCategory = selectedCategory === 'all' || waitlist.category === selectedCategory;
+      const matchesSearch = searchQuery === '' || 
+        waitlist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        waitlist.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [waitlists, selectedCategory, searchQuery]);
+
+  // Trigger animation when filters change
+  useEffect(() => {
+    setAnimationKey(prev => prev + 1);
+  }, [selectedCategory, searchQuery]);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -123,64 +151,190 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Waitlists Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {waitlists.map((waitlist, index) => (
-              <Card 
-                key={waitlist.id}
-                className="glass shadow-card-premium animate-fade-in hover:shadow-glass transition-all duration-300 hover:-translate-y-2 group overflow-hidden"
-                style={{animationDelay: `${index * 0.1}s`}}
+          {/* Enhanced Search Bar with Better Visibility */}
+          <div className="max-w-2xl mx-auto mb-8 animate-fade-in">
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-primary-glow rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
+              <div className="relative bg-white/90 dark:bg-background/90 backdrop-blur-xl rounded-2xl border border-primary/20 shadow-xl">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary h-5 w-5 z-10" />
+                <Input
+                  type="text"
+                  placeholder="Search for amazing waitlists..."
+                  value={searchInput}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchInput(value);
+                    
+                    // Clear previous timeout
+                    if (debounceTimeoutRef.current) {
+                      clearTimeout(debounceTimeoutRef.current);
+                    }
+                    
+                    // Set new timeout for search query update
+                    debounceTimeoutRef.current = setTimeout(() => {
+                      setSearchQuery(value);
+                    }, 300);
+                  }}
+                  className="w-full pl-12 pr-4 py-4 h-14 text-base bg-transparent border-0 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground/60 font-medium"
+                />
+                {(searchQuery || searchInput) && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSearchInput('');
+                      if (debounceTimeoutRef.current) {
+                        clearTimeout(debounceTimeoutRef.current);
+                      }
+                    }}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Category Filter Buttons with Smooth Transitions */}
+          <div className="flex flex-wrap justify-center gap-3 mb-12 animate-fade-in">
+            {categories.map((category, index) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`
+                  relative px-6 py-2.5 rounded-full font-medium text-sm
+                  transition-all duration-500 transform hover:scale-105
+                  ${selectedCategory === category 
+                    ? 'bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-lg shadow-primary/30 scale-110 animate-pulse-once' 
+                    : 'bg-white/80 dark:bg-card/80 text-foreground hover:bg-white dark:hover:bg-card border border-border/30 hover:border-primary/30 hover:shadow-md'
+                  }
+                `}
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animation: 'slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                  perspective: '1000px'
+                }}
               >
-                <Link to={`/service/${waitlist.slug}`} className="block">
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={waitlist.image} 
-                      alt={waitlist.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute top-3 right-3">
-                      <span className="px-2 py-1 bg-primary/80 text-primary-foreground text-xs font-medium rounded-full backdrop-blur-sm">
-                        {waitlist.category}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <CardHeader>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      {waitlist.name}
-                    </CardTitle>
-                    <CardDescription className="text-sm line-clamp-2">
-                      {waitlist.description}
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
-                          {loading ? 'Loading...' : `${waitlist.participantCount.toLocaleString()} joined`}
+                <span className="relative z-10">
+                  {category === 'all' ? '✨ All Categories' : category}
+                </span>
+                {selectedCategory === category && (
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-primary-glow opacity-20 blur-md"></div>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Results Count */}
+          {(searchQuery || selectedCategory !== 'all') && (
+            <div className="text-center mb-6 text-muted-foreground">
+              Found {filteredWaitlists.length} {filteredWaitlists.length === 1 ? 'waitlist' : 'waitlists'}
+              {selectedCategory !== 'all' && ` in ${selectedCategory}`}
+              {searchQuery && ` matching "${searchQuery}"`}
+            </div>
+          )}
+
+          {/* Fluid Grid with Morphing Transitions */}
+          {filteredWaitlists.length > 0 ? (
+            <div 
+              key={animationKey}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+              {filteredWaitlists.map((waitlist, index) => (
+                <Card 
+                  key={waitlist.id}
+                  className="waitlist-card relative glass shadow-card-premium hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group overflow-hidden"
+                  style={{
+                    animationDelay: `${index * 140}ms`,
+                    animation: `cardElegantFade 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards`,
+                    opacity: 0,
+                    transform: 'scale(0.95)'
+                  }}
+                >
+                  <Link to={`/service/${waitlist.slug}`} className="block">
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={waitlist.image} 
+                        alt={waitlist.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      <div className="absolute top-3 right-3 transform transition-all duration-300 group-hover:scale-110">
+                        <span className="px-3 py-1.5 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-xs font-semibold rounded-full backdrop-blur-md shadow-lg">
+                          {waitlist.category}
                         </span>
                       </div>
                     </div>
+                    
+                    <CardHeader>
+                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                        {waitlist.name}
+                      </CardTitle>
+                      <CardDescription className="text-sm line-clamp-2">
+                        {waitlist.description}
+                      </CardDescription>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">
+                            {loading ? 'Loading...' : `${waitlist.participantCount.toLocaleString()} joined`}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Link>
+                  
+                  <CardContent className="pt-0 pb-6">
+                    <Button 
+                      className="w-full" 
+                      size="lg"
+                      asChild
+                    >
+                      <Link to={`/waitlist/${waitlist.slug}`}>
+                        Join Waitlist
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
                   </CardContent>
-                </Link>
-                
-                <CardContent className="pt-0 pb-6">
-                  <Button 
-                    className="w-full" 
-                    size="lg"
-                    asChild
-                  >
-                    <Link to={`/waitlist/${waitlist.slug}`}>
-                      Join Waitlist
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Card className="glass shadow-glass inline-block">
+                <CardContent className="py-8 px-12">
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    No waitlists found
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {searchQuery ? `No results for "${searchQuery}"` : 'No waitlists in this category'}
+                  </p>
+                  {(searchQuery || selectedCategory !== 'all') && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-4 hover:scale-105 transition-transform duration-200"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSearchInput('');
+                        setSelectedCategory('all');
+                        if (debounceTimeoutRef.current) {
+                          clearTimeout(debounceTimeoutRef.current);
+                        }
+                      }}
+                    >
+                      Clear filters
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
-            ))}
-          </div>
+            </div>
+          )}
 
           {/* Call to Action for Organizers */}
           {!authLoading && (
