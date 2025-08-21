@@ -21,12 +21,53 @@ interface WaitlistItem {
   category: string;
 }
 
+interface CategoryConfig {
+  id: string;
+  name: string;
+  icon: string;
+  subcategories: string[];
+}
+
+const CATEGORY_CONFIG: CategoryConfig[] = [
+  {
+    id: 'technology',
+    name: 'Technology & Software',
+    icon: '',
+    subcategories: ['Software/SaaS', 'Web/App Development', 'Hardware', 'Productivity Tools', 'Developer Tools', 'AI/Machine Learning']
+  },
+  {
+    id: 'business',
+    name: 'Business & Finance',
+    icon: '',
+    subcategories: ['E-commerce', 'Marketing/Advertising', 'Fintech', 'CRM', 'Payment Services', 'Investment']
+  },
+  {
+    id: 'lifestyle',
+    name: 'Lifestyle & Services',
+    icon: '',
+    subcategories: ['Health/Wellness', 'Food & Beverage', 'Fashion/Beauty', 'Fitness', 'Food Delivery', 'Personal Styling']
+  },
+  {
+    id: 'culture',
+    name: 'Culture & Entertainment',
+    icon: '',
+    subcategories: ['Art/Design', 'Gaming', 'Media/Content', 'Streaming', 'Comics/Novels', 'NFT']
+  },
+  {
+    id: 'education',
+    name: 'Education & Community',
+    icon: '',
+    subcategories: ['Education', 'Community', 'Events', 'Online Classes', 'Language Learning', 'Workshops']
+  }
+];
+
 const Index = () => {
   const { isAuthenticated, user, logout, isLoading: authLoading } = useAuth();
   const [waitlists, setWaitlists] = useState<WaitlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string>("all");
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("all");
   const [searchInput, setSearchInput] = useState("");
   const [animationKey, setAnimationKey] = useState(0);
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
@@ -57,27 +98,53 @@ const Index = () => {
     fetchServices();
   }, []);
 
-  // Extract unique categories from waitlists
-  const categories = useMemo(() => {
-    const uniqueCategories = Array.from(new Set(waitlists.map(w => w.category)));
-    return ['all', ...uniqueCategories.sort()];
-  }, [waitlists]);
+  // Get subcategories for selected main category
+  const availableSubCategories = useMemo(() => {
+    if (selectedMainCategory === 'all') {
+      const allSubs = CATEGORY_CONFIG.flatMap(cat => cat.subcategories);
+      const uniqueSubs = Array.from(new Set(allSubs));
+      return ['all', ...uniqueSubs.sort()];
+    }
+    
+    const selectedCategoryConfig = CATEGORY_CONFIG.find(cat => cat.id === selectedMainCategory);
+    return selectedCategoryConfig 
+      ? ['all', ...selectedCategoryConfig.subcategories]
+      : ['all'];
+  }, [selectedMainCategory]);
 
-  // Filter waitlists based on search query and selected category
+  // Filter waitlists based on search query and selected categories
   const filteredWaitlists = useMemo(() => {
     return waitlists.filter(waitlist => {
-      const matchesCategory = selectedCategory === 'all' || waitlist.category === selectedCategory;
+      // Search filter
       const matchesSearch = searchQuery === '' || 
         waitlist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         waitlist.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
+      
+      // Main category filter
+      let matchesMainCategory = true;
+      if (selectedMainCategory !== 'all') {
+        const categoryConfig = CATEGORY_CONFIG.find(cat => cat.id === selectedMainCategory);
+        matchesMainCategory = categoryConfig ? 
+          categoryConfig.subcategories.includes(waitlist.category) : false;
+      }
+      
+      // Sub category filter
+      const matchesSubCategory = selectedSubCategory === 'all' || 
+        waitlist.category === selectedSubCategory;
+      
+      return matchesSearch && matchesMainCategory && matchesSubCategory;
     });
-  }, [waitlists, selectedCategory, searchQuery]);
+  }, [waitlists, selectedMainCategory, selectedSubCategory, searchQuery]);
 
   // Trigger animation when filters change
   useEffect(() => {
     setAnimationKey(prev => prev + 1);
-  }, [selectedCategory, searchQuery]);
+  }, [selectedMainCategory, selectedSubCategory, searchQuery]);
+
+  // Reset subcategory when main category changes
+  useEffect(() => {
+    setSelectedSubCategory('all');
+  }, [selectedMainCategory]);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -197,41 +264,80 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Enhanced Category Filter Buttons with Smooth Transitions */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12 animate-fade-in">
-            {categories.map((category, index) => (
+          {/* Main Category Tabs */}
+          <div className="flex justify-center mb-8 animate-fade-in overflow-x-auto">
+            <div className="flex bg-white/90 dark:bg-card/90 rounded-2xl p-1 shadow-lg backdrop-blur-sm border border-border/30 min-w-fit">
               <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => setSelectedMainCategory('all')}
                 className={`
-                  relative px-6 py-2.5 rounded-full font-medium text-sm
-                  transition-all duration-500 transform hover:scale-105
-                  ${selectedCategory === category 
-                    ? 'bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-lg shadow-primary/30 scale-110 animate-pulse-once' 
+                  px-6 py-3 rounded-xl font-medium text-sm transition-all duration-300
+                  ${selectedMainCategory === 'all'
+                    ? 'bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md'
+                    : 'text-foreground hover:bg-white/50 dark:hover:bg-card/50'
+                  }
+                `}
+              >
+                All Categories
+              </button>
+              {CATEGORY_CONFIG.map((category, index) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedMainCategory(category.id)}
+                  className={`
+                    px-6 py-3 rounded-xl font-medium text-sm transition-all duration-300 whitespace-nowrap
+                    ${selectedMainCategory === category.id
+                      ? 'bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md'
+                      : 'text-foreground hover:bg-white/50 dark:hover:bg-card/50'
+                    }
+                  `}
+                  style={{
+                    animationDelay: `${(index + 1) * 100}ms`,
+                    animation: 'slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+                  }}
+                >
+                  <span className="hidden sm:inline">{category.name}</span>
+                  <span className="sm:hidden">{category.name.split(' ')[0]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sub Category Filter Buttons */}
+          <div 
+            key={`subcategories-${selectedMainCategory}`}
+            className="flex flex-wrap justify-center gap-3 mb-12 animate-fade-in"
+          >
+            {availableSubCategories.map((subcategory, index) => (
+              <button
+                key={subcategory}
+                onClick={() => setSelectedSubCategory(subcategory)}
+                className={`
+                  relative px-5 py-2 rounded-full font-medium text-sm
+                  transition-all duration-300 transform hover:scale-105
+                  ${selectedSubCategory === subcategory 
+                    ? 'bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-lg shadow-primary/30 scale-105' 
                     : 'bg-white/80 dark:bg-card/80 text-foreground hover:bg-white dark:hover:bg-card border border-border/30 hover:border-primary/30 hover:shadow-md'
                   }
                 `}
                 style={{
-                  animationDelay: `${index * 50}ms`,
-                  animation: 'slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-                  perspective: '1000px'
+                  animationDelay: `${index * 60}ms`,
+                  animation: 'slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                  opacity: 0
                 }}
               >
                 <span className="relative z-10">
-                  {category === 'all' ? '✨ All Categories' : category}
+                  {subcategory === 'all' ? 'All' : subcategory}
                 </span>
-                {selectedCategory === category && (
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-primary-glow opacity-20 blur-md"></div>
-                )}
               </button>
             ))}
           </div>
 
           {/* Results Count */}
-          {(searchQuery || selectedCategory !== 'all') && (
+          {(searchQuery || selectedMainCategory !== 'all' || selectedSubCategory !== 'all') && (
             <div className="text-center mb-6 text-muted-foreground">
               Found {filteredWaitlists.length} {filteredWaitlists.length === 1 ? 'waitlist' : 'waitlists'}
-              {selectedCategory !== 'all' && ` in ${selectedCategory}`}
+              {selectedMainCategory !== 'all' && ` in ${CATEGORY_CONFIG.find(cat => cat.id === selectedMainCategory)?.name || selectedMainCategory}`}
+              {selectedSubCategory !== 'all' && ` - ${selectedSubCategory}`}
               {searchQuery && ` matching "${searchQuery}"`}
             </div>
           )}
@@ -314,7 +420,7 @@ const Index = () => {
                   <p className="text-muted-foreground">
                     {searchQuery ? `No results for "${searchQuery}"` : 'No waitlists in this category'}
                   </p>
-                  {(searchQuery || selectedCategory !== 'all') && (
+                  {(searchQuery || selectedMainCategory !== 'all' || selectedSubCategory !== 'all') && (
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -322,7 +428,8 @@ const Index = () => {
                       onClick={() => {
                         setSearchQuery('');
                         setSearchInput('');
-                        setSelectedCategory('all');
+                        setSelectedMainCategory('all');
+                        setSelectedSubCategory('all');
                         if (debounceTimeoutRef.current) {
                           clearTimeout(debounceTimeoutRef.current);
                         }
