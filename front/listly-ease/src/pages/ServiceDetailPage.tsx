@@ -442,7 +442,11 @@ const ServiceDetailPage = () => {
           <div className="flex flex-col lg:flex-row gap-6 lg:flex-1">
             <div className="flex gap-6">
               {isEditMode && canEdit && editingField === 'image' ? (
-                <div className="w-24 h-24 lg:w-32 lg:h-32">
+                <div className={`w-24 h-24 lg:w-32 lg:h-32 ${
+                  service.launchDate && new Date(service.launchDate).getTime() > new Date().getTime() 
+                    ? 'mt-4' 
+                    : 'mt-1'
+                }`}>
                   <ImageUpload
                     value={service.image || ''}
                     onChange={(value) => handleFieldEdit('image', value)}
@@ -456,7 +460,11 @@ const ServiceDetailPage = () => {
                 </div>
               ) : (
                 <div 
-                  className={`relative ${isEditMode && canEdit ? 'cursor-pointer' : ''}`}
+                  className={`relative ${
+                    service.launchDate && new Date(service.launchDate).getTime() > new Date().getTime() 
+                      ? 'mt-4' 
+                      : 'mt-1'
+                  } ${isEditMode && canEdit ? 'cursor-pointer' : ''}`}
                   onClick={() => isEditMode && canEdit && setEditingField('image')}
                 >
                   <Avatar className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl shadow-xl">
@@ -491,7 +499,7 @@ const ServiceDetailPage = () => {
                 </div>
 
                 {/* Developer - Same style as BY text */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <span className="text-sm font-medium text-muted-foreground/60 uppercase tracking-wider mr-2">
                     BY
                   </span>
@@ -512,7 +520,7 @@ const ServiceDetailPage = () => {
                 <div className="flex items-center gap-4">
                   <Button 
                     size="lg" 
-                    className="shadow-button"
+                    className="shadow-button -mt-1"
                     asChild
                   >
                     <Link to={`/waitlist/${service.slug}`}>

@@ -235,27 +235,18 @@ const DdayCounter: React.FC<DdayCounterProps> = ({ launchDate, className }) => {
 
   return (
     <motion.div
-      className={`inline-flex flex-col items-center space-y-2 ${className}`}
+      className={`inline-flex items-center ${className}`}
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <motion.span
-        className="text-sm font-medium text-primary"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.4 }}
-      >
-        ⏰ Countdown
-      </motion.span>
-      
       <div className="relative">
         <PulsingGlow />
         <motion.div
           className="flex items-center justify-center space-x-2 px-3 py-2 glass backdrop-blur-md bg-white/5 dark:bg-black/5 border border-white/10 dark:border-white/5 rounded-2xl"
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
+          transition={{ delay: 0.1, duration: 0.5, type: "spring" }}
         >
           {timeLeft.days > 0 && (
             <>
