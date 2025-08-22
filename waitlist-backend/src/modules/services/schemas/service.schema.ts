@@ -63,8 +63,6 @@ export class Service {
   @Prop({ type: [String], default: [] })
   screenshots!: string[];
 
-  @Prop({ default: 0 })
-  rating!: number;
 
   @Prop({ default: Date.now })
   createdAt!: Date;

@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { DateTimePicker } from "@/components/ui/DateTimePicker";
 import { waitlistService } from "@/services/waitlist.service";
 import { useToast } from "@/hooks/use-toast";
 
@@ -13,6 +14,7 @@ interface SimpleServiceFormData {
   name: string;
   description: string;
   slug: string;
+  launchDate: string;
 }
 
 interface SimpleServiceFormProps {
@@ -28,6 +30,7 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
     name: "",
     description: "",
     slug: "",
+    launchDate: "",
   });
 
   const handleInputChange = (field: keyof SimpleServiceFormData, value: string) => {
@@ -97,9 +100,8 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
         developer: "Independent Developer",
         language: "EN",
         platform: "Web",
-        launchDate: "Coming Soon",
+        launchDate: formData.launchDate || undefined,
         screenshots: [],
-        rating: 4.5,
       });
       
       toast({
@@ -179,6 +181,17 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
               rows={3}
             />
           </div>
+
+          <DateTimePicker
+            label="Launch Date (Optional)"
+            value={formData.launchDate}
+            onChange={(value) => handleInputChange('launchDate', value)}
+            disabled={isLoading}
+            placeholder="Select launch date and time with timezone"
+          />
+          <p className="text-sm text-muted-foreground">
+            Set when your service will launch globally. The time will be converted to UTC for storage and displayed in each user's local timezone.
+          </p>
 
           <div className="bg-muted/50 p-4 rounded-lg">
             <h4 className="font-medium text-sm mb-2">What happens next?</h4>

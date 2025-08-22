@@ -62,7 +62,7 @@ export class ServicesController {
       platform: service.platform,
       launchDate: service.launchDate,
       screenshots: service.screenshots,
-      rating: service.rating,
+
       waitlistUrl: `/waitlist/${service.slug}`,
       participantCount,
       createdAt: service.createdAt.toISOString(),
@@ -93,7 +93,7 @@ export class ServicesController {
       platform: service.platform,
       launchDate: service.launchDate,
       screenshots: service.screenshots,
-      rating: service.rating,
+
       waitlistUrl: `/waitlist/${service.slug}`,
       participantCount: (service as any).participantCount || 0,
       createdAt: service.createdAt.toISOString(),
@@ -124,7 +124,7 @@ export class ServicesController {
       platform: service.platform,
       launchDate: service.launchDate,
       screenshots: service.screenshots,
-      rating: service.rating,
+
       waitlistUrl: `/waitlist/${service.slug}`,
       participantCount: (service as any).participantCount || 0,
       createdAt: service.createdAt.toISOString(),
@@ -167,7 +167,7 @@ export class ServicesController {
       platform: service.platform,
       launchDate: service.launchDate,
       screenshots: service.screenshots,
-      rating: service.rating,
+
       waitlistUrl: `/waitlist/${service.slug}`,
       participantCount,
       createdAt: service.createdAt.toISOString(),

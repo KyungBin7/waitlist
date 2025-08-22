@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Users, ArrowLeft, Star, Download, Share2 } from "lucide-react";
+import { Users, ArrowLeft, Clock, Download, Share2, LogOut, LayoutDashboard, Calendar } from "lucide-react";
 import { WaitlistJoinForm } from "@/components/waitlist/WaitlistJoinForm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EditableField } from "@/components/ui/EditableField";
@@ -12,7 +12,9 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { waitlistService } from "@/services/waitlist.service";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
 import premiumAppImage from "@/assets/premium-app.jpg";
+import DdayCounter from "@/components/ui/DdayCounter";
 import betaTestingImage from "@/assets/beta-testing.jpg";
 import courseImage from "@/assets/course.jpg";
 
@@ -33,7 +35,7 @@ interface ServiceDetail {
   platform?: string;
   launchDate?: string;
   screenshots?: string[];
-  rating?: number;
+
   waitlistTitle?: string;
   waitlistDescription?: string;
   waitlistUrl?: string;
@@ -184,7 +186,7 @@ const ServiceDetailPage = () => {
         platform: updatedService.platform,
         launchDate: updatedService.launchDate,
         screenshots: updatedService.screenshots,
-        rating: updatedService.rating,
+
       };
       
       console.log("Auto-save attempt - service ID:", updatedService.id);
@@ -264,7 +266,7 @@ const ServiceDetailPage = () => {
         platform: service.platform,
         launchDate: service.launchDate,
         screenshots: service.screenshots,
-        rating: service.rating,
+
       };
       
       console.log("Manual save attempt - service ID:", service.id);
@@ -408,10 +410,17 @@ const ServiceDetailPage = () => {
                   {isAuthenticated ? (
                     <div className="flex items-center space-x-3">
                       <span className="text-sm text-muted-foreground">
-                        Welcome, {user?.email}
+                        Welcome, {user?.email?.split('@')[0]}
                       </span>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link to="/dashboard">
+                          <LayoutDashboard className="h-4 w-4 mr-2" />
+                          Dashboard
+                        </Link>
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={logout}>
-                        Logout
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
                       </Button>
                     </div>
                   ) : (
@@ -465,60 +474,53 @@ const ServiceDetailPage = () => {
               )}
               
               <div className="flex-1 min-w-0">
-                <EditableField
-                  value={service.title || service.name || service.name}
-                  onSave={(value) => handleFieldEdit('name', value)}
-                  isEditing={isEditMode && canEdit && editingField === 'title'}
-                  onEdit={() => canEdit && setEditingField('title')}
-                  onCancel={() => setEditingField(null)}
-                  className={isEditMode && canEdit ? '' : 'hover:bg-transparent'}
-                  inputClassName="text-2xl lg:text-4xl font-bold text-foreground mb-2"
-                />
+                {/* Service Name - Bold and prominent */}
+                <div className="mb-2">
+                  <EditableField
+                    value={service.title || service.name || service.name}
+                    onSave={(value) => handleFieldEdit('name', value)}
+                    isEditing={isEditMode && canEdit && editingField === 'title'}
+                    onEdit={() => canEdit && setEditingField('title')}
+                    onCancel={() => setEditingField(null)}
+                    className={cn(
+                      "text-3xl lg:text-4xl font-black text-foreground leading-tight tracking-tight",
+                      isEditMode && canEdit ? 'cursor-pointer hover:bg-muted/30 rounded p-2' : 'hover:bg-transparent px-0 py-0'
+                    )}
+                    inputClassName="text-3xl lg:text-4xl font-black text-foreground leading-tight tracking-tight"
+                  />
+                </div>
 
-                <EditableField
-                  value={service.tagline || service.description}
-                  onSave={(value) => handleFieldEdit('tagline', value)}
-                  isEditing={isEditMode && canEdit && editingField === 'tagline'}
-                  onEdit={() => canEdit && setEditingField('tagline')}
-                  onCancel={() => setEditingField(null)}
-                  className={isEditMode && canEdit ? '' : 'hover:bg-transparent'}
-                  inputClassName="text-lg text-muted-foreground mb-3"
-                />
-
-                <EditableField
-                  value={service.developer || "Independent Developer"}
-                  onSave={(value) => handleFieldEdit('developer', value)}
-                  isEditing={isEditMode && canEdit && editingField === 'developer'}
-                  onEdit={() => canEdit && setEditingField('developer')}
-                  onCancel={() => setEditingField(null)}
-                  className={isEditMode && canEdit ? '' : 'hover:bg-transparent'}
-                  inputClassName="text-sm text-muted-foreground mb-4"
-                />
-                
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="flex items-center space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`h-4 w-4 ${i < Math.floor(service.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
-                      />
-                    ))}
-                    <span className="text-sm text-muted-foreground ml-2">{service.rating?.toFixed(1) || 'N/A'}</span>
-                  </div>
-                  {service.category && (
-                    <span className="text-sm text-muted-foreground">#{service.category}</span>
-                  )}
+                {/* Developer - Same style as BY text */}
+                <div className="mb-6">
+                  <span className="text-sm font-medium text-muted-foreground/60 uppercase tracking-wider mr-2">
+                    BY
+                  </span>
+                  <EditableField
+                    value={service.developer || "Independent Developer"}
+                    onSave={(value) => handleFieldEdit('developer', value)}
+                    isEditing={isEditMode && canEdit && editingField === 'developer'}
+                    onEdit={() => canEdit && setEditingField('developer')}
+                    onCancel={() => setEditingField(null)}
+                    className={cn(
+                      "text-sm font-medium text-muted-foreground/60 uppercase tracking-wider inline",
+                      isEditMode && canEdit ? 'cursor-pointer hover:bg-muted/30 rounded px-2 py-1' : 'hover:bg-transparent px-0 py-0'
+                    )}
+                    inputClassName="text-sm font-medium text-muted-foreground/60 uppercase tracking-wider"
+                  />
                 </div>
                 
-                <Button 
-                  size="lg" 
-                  className="w-full lg:w-auto shadow-button"
-                  asChild
-                >
-                  <Link to={`/waitlist/${service.slug}`}>
-                    Join Waitlist
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-4">
+                  <Button 
+                    size="lg" 
+                    className="shadow-button"
+                    asChild
+                  >
+                    <Link to={`/waitlist/${service.slug}`}>
+                      Join Waitlist
+                    </Link>
+                  </Button>
+                  <DdayCounter launchDate={service.launchDate} />
+                </div>
               </div>
             </div>
           </div>
@@ -535,6 +537,12 @@ const ServiceDetailPage = () => {
                       <span className="font-semibold">{(service.participantCount || 0).toLocaleString()}</span>
                     </div>
                   </div>
+                  {service.category && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Category</span>
+                      <Badge variant="secondary">{service.category}</Badge>
+                    </div>
+                  )}
                   {service.platform && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Platform</span>

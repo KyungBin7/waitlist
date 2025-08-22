@@ -5,9 +5,7 @@ import {
   Matches,
   MaxLength,
   IsArray,
-  IsNumber,
-  Min,
-  Max,
+  IsDateString,
 } from 'class-validator';
 
 export class CreateServiceDto {
@@ -85,9 +83,8 @@ export class CreateServiceDto {
   @MaxLength(100)
   platform?: string;
 
-  @IsString()
+  @IsDateString()
   @IsOptional()
-  @MaxLength(50)
   launchDate?: string;
 
   @IsArray()
@@ -95,9 +92,4 @@ export class CreateServiceDto {
   @IsString({ each: true })
   screenshots?: string[];
 
-  @IsNumber()
-  @IsOptional()
-  @Min(0)
-  @Max(5)
-  rating?: number;
 }

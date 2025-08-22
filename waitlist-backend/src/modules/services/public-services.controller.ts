@@ -50,7 +50,7 @@ export class PublicServicesController {
       platform: service.platform,
       launchDate: service.launchDate,
       screenshots: service.screenshots || [],
-      rating: service.rating || 4.8,
+
       waitlistTitle: service.waitlistTitle,
       waitlistDescription: service.waitlistDescription,
     };
