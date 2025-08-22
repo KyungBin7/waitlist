@@ -197,9 +197,10 @@ const ServiceDetailPage = () => {
       setHasUnsavedChanges(false);
       
       toast({
-        title: "Auto-saved",
+        title: "💾 Auto-saved",
         description: "Changes saved automatically",
         duration: 2000,
+        className: "border-blue-500/20 bg-blue-50 dark:bg-blue-950",
       });
     } catch (err) {
       console.error("Auto-save error:", err);
@@ -281,8 +282,9 @@ const ServiceDetailPage = () => {
       setEditingField(null);
       
       toast({
-        title: "Success",
+        title: "✅ Success",
         description: "Service updated successfully!",
+        className: "border-green-500/20 bg-green-50 dark:bg-green-950",
       });
     } catch (err) {
       console.error("Manual save error:", err);
@@ -384,6 +386,14 @@ const ServiceDetailPage = () => {
             <div className="flex items-center space-x-4">
               {isEditMode ? (
                 <>
+                  <div className="flex items-center space-x-2 text-sm">
+                    <div className="flex items-center space-x-1 text-primary">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                      <span className="font-medium">Edit Mode</span>
+                    </div>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">Click dashed elements to edit</span>
+                  </div>
                   {isSaving && (
                     <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                       <div className="animate-spin h-3 w-3 border border-current border-t-transparent rounded-full"></div>
@@ -391,10 +401,10 @@ const ServiceDetailPage = () => {
                     </div>
                   )}
                   {hasUnsavedChanges && !isSaving && (
-                    <span className="text-sm text-amber-600">Unsaved changes</span>
+                    <span className="text-sm text-amber-600 animate-pulse">● Unsaved changes</span>
                   )}
-                  <Button onClick={handleSave} size="sm" disabled={isSaving}>
-                    Save Changes
+                  <Button onClick={handleSave} size="sm" disabled={isSaving} className="animate-bounce-once">
+                    ✓ Save Changes
                   </Button>
                   <Button variant="outline" onClick={() => setIsEditMode(false)} size="sm" disabled={isSaving}>
                     Cancel
@@ -442,7 +452,7 @@ const ServiceDetailPage = () => {
           <div className="flex flex-col lg:flex-row gap-6 lg:flex-1">
             <div className="flex gap-6">
               {isEditMode && canEdit && editingField === 'image' ? (
-                <div className={`w-24 h-24 lg:w-32 lg:h-32 ${
+                <div className={`w-24 h-24 lg:w-32 lg:h-32 border-2 border-primary border-solid bg-primary/5 rounded-2xl p-2 animate-pulse ${
                   service.launchDate && new Date(service.launchDate).getTime() > new Date().getTime() 
                     ? 'mt-4' 
                     : 'mt-1'
@@ -453,18 +463,25 @@ const ServiceDetailPage = () => {
                     className="w-full h-full"
                   />
                   <div className="flex gap-2 mt-2">
-                    <Button size="sm" onClick={() => setEditingField(null)}>
-                      Done
+                    <Button size="sm" onClick={() => setEditingField(null)} className="bg-green-600 hover:bg-green-700">
+                      ✓ Done
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div 
-                  className={`relative ${
-                    service.launchDate && new Date(service.launchDate).getTime() > new Date().getTime() 
-                      ? 'mt-4' 
-                      : 'mt-1'
-                  } ${isEditMode && canEdit ? 'cursor-pointer' : ''}`}
+                  className={cn(
+                    `relative transition-all duration-300 ${
+                      service.launchDate && new Date(service.launchDate).getTime() > new Date().getTime() 
+                        ? 'mt-4' 
+                        : 'mt-1'
+                    }`,
+                    isEditMode && canEdit 
+                      ? editingField === 'image'
+                        ? 'border-2 border-primary border-solid bg-primary/5 rounded-2xl p-2 animate-pulse'
+                        : 'border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/10 rounded-2xl p-2'
+                      : ''
+                  )}
                   onClick={() => isEditMode && canEdit && setEditingField('image')}
                 >
                   <Avatar className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl shadow-xl">
@@ -491,10 +508,14 @@ const ServiceDetailPage = () => {
                     onEdit={() => canEdit && setEditingField('title')}
                     onCancel={() => setEditingField(null)}
                     className={cn(
-                      "text-3xl lg:text-4xl font-black text-foreground leading-tight tracking-tight",
-                      isEditMode && canEdit ? 'cursor-pointer hover:bg-muted/30 rounded p-2' : 'hover:bg-transparent px-0 py-0'
+                      "text-3xl lg:text-4xl font-black text-foreground leading-tight tracking-tight transition-all duration-300",
+                      isEditMode && canEdit 
+                        ? editingField === 'title'
+                          ? 'border-2 border-primary border-solid bg-primary/5 rounded-lg p-2 animate-pulse'
+                          : 'border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/20 rounded-lg p-2'
+                        : 'hover:bg-transparent px-0 py-0'
                     )}
-                    inputClassName="text-3xl lg:text-4xl font-black text-foreground leading-tight tracking-tight"
+                    inputClassName="text-3xl lg:text-4xl font-black text-foreground leading-tight tracking-tight border-2 border-primary rounded-lg"
                   />
                 </div>
 
@@ -510,10 +531,14 @@ const ServiceDetailPage = () => {
                     onEdit={() => canEdit && setEditingField('developer')}
                     onCancel={() => setEditingField(null)}
                     className={cn(
-                      "text-sm font-medium text-muted-foreground/60 uppercase tracking-wider inline",
-                      isEditMode && canEdit ? 'cursor-pointer hover:bg-muted/30 rounded px-2 py-1' : 'hover:bg-transparent px-0 py-0'
+                      "text-sm font-medium text-muted-foreground/60 uppercase tracking-wider inline transition-all duration-300",
+                      isEditMode && canEdit 
+                        ? editingField === 'developer'
+                          ? 'border-2 border-primary border-solid bg-primary/5 rounded-lg px-2 py-1 animate-pulse'
+                          : 'border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/20 rounded-lg px-2 py-1'
+                        : 'hover:bg-transparent px-0 py-0'
                     )}
-                    inputClassName="text-sm font-medium text-muted-foreground/60 uppercase tracking-wider"
+                    inputClassName="text-sm font-medium text-muted-foreground/60 uppercase tracking-wider border-2 border-primary rounded-lg"
                   />
                 </div>
                 
@@ -608,8 +633,15 @@ const ServiceDetailPage = () => {
                     isEditing={isEditMode && canEdit && editingField === 'fullDescription'}
                     onEdit={() => canEdit && setEditingField('fullDescription')}
                     onCancel={() => setEditingField(null)}
-                    className={isEditMode && canEdit ? 'cursor-pointer hover:bg-muted/30 rounded p-3' : 'whitespace-pre-line leading-relaxed'}
-                    inputClassName="h-64"
+                    className={cn(
+                      "transition-all duration-300",
+                      isEditMode && canEdit 
+                        ? editingField === 'fullDescription'
+                          ? 'border-2 border-primary border-solid bg-primary/5 rounded-lg p-3 animate-pulse'
+                          : 'border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/20 rounded-lg p-3'
+                        : 'whitespace-pre-line leading-relaxed'
+                    )}
+                    inputClassName="h-64 border-2 border-primary rounded-lg"
                     multiline={true}
                   />
                 </div>
@@ -634,7 +666,15 @@ const ServiceDetailPage = () => {
                       isEditing={isEditMode && canEdit && editingField === 'developer-info'}
                       onEdit={() => canEdit && setEditingField('developer-info')}
                       onCancel={() => setEditingField(null)}
-                      className={isEditMode && canEdit ? 'cursor-pointer hover:bg-muted/30 rounded p-1' : 'font-medium'}
+                      className={cn(
+                        "font-medium transition-all duration-300",
+                        isEditMode && canEdit 
+                          ? editingField === 'developer-info'
+                            ? 'border-2 border-primary border-solid bg-primary/5 rounded-lg p-2 animate-pulse'
+                            : 'border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/20 rounded-lg p-2'
+                          : ''
+                      )}
+                      inputClassName="border-2 border-primary rounded-lg"
                     />
                   </div>
                 </CardContent>
