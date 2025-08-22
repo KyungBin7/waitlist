@@ -116,14 +116,44 @@ export class ServicesService {
     organizerId: string,
   ): Promise<ServiceDocument> {
     try {
+      console.log('Update service - ID:', id);
+      console.log('Update service - DTO:', updateServiceDto);
+      console.log('Update service - Organizer ID:', organizerId);
+      
+      // First find the existing service to ensure it exists
+      const existingService = await this.serviceModel
+        .findOne({
+          _id: new Types.ObjectId(id),
+          organizerId: new Types.ObjectId(organizerId),
+        })
+        .exec();
+
+      if (!existingService) {
+        throw new NotFoundException('Service not found');
+      }
+
+      console.log('Existing service before update:', existingService.toObject());
+
+      // Perform the update with explicit field setting
+      const updateData = {
+        ...updateServiceDto,
+        updatedAt: new Date(),
+      };
+
+      console.log('Update data being applied:', updateData);
+
       const service = await this.serviceModel
         .findOneAndUpdate(
           {
             _id: new Types.ObjectId(id),
             organizerId: new Types.ObjectId(organizerId),
           },
-          { ...updateServiceDto, updatedAt: new Date() },
-          { new: true },
+          { $set: updateData },
+          { 
+            new: true,
+            runValidators: true,
+            upsert: false
+          },
         )
         .exec();
 
@@ -131,8 +161,23 @@ export class ServicesService {
         throw new NotFoundException('Service not found');
       }
 
-      return service;
+      console.log('Updated service in DB:', service.toObject());
+
+      // Add participant count to the updated service
+      const participantCount = await this.getParticipantCount(
+        service._id as Types.ObjectId,
+      );
+
+      const result = {
+        ...service.toObject(),
+        participantCount,
+      } as any;
+
+      console.log('Final update result:', result);
+
+      return result;
     } catch (error: any) {
+      console.error('Update service error:', error);
       if (error.code === 11000) {
         throw new ConflictException('A service with this slug already exists');
       }

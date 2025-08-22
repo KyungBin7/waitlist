@@ -8,6 +8,17 @@ export interface Service {
   waitlistTitle?: string;
   waitlistDescription?: string;
   waitlistBackground?: string;
+  image?: string;
+  category?: string;
+  tagline?: string;
+  fullDescription?: string;
+  icon?: string;
+  developer?: string;
+  language?: string;
+  platform?: string;
+  launchDate?: string;
+  screenshots?: string[];
+  rating?: number;
   waitlistUrl: string;
   participantCount: number;
   createdAt: string;

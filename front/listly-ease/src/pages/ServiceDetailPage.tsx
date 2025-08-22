@@ -59,23 +59,11 @@ const ServiceDetailPage = () => {
   // Check if current user can edit this service
   const canEdit = isAuthenticated && service && user && service.organizerId === user.id;
   
-  // Debug logging for canEdit
-  useEffect(() => {
-    console.log("=== Debug canEdit ===");
-    console.log("isAuthenticated:", isAuthenticated);
-    console.log("service:", service);
-    console.log("user:", user);
-    console.log("service.organizerId:", service?.organizerId);
-    console.log("user.id:", user?.id);
-    console.log("canEdit:", canEdit);
-    console.log("authLoading:", authLoading);
-    console.log("==================");
-  }, [isAuthenticated, service, user, canEdit, authLoading]);
-  
+
   // Effect to disable edit mode if user doesn't have permission
   useEffect(() => {
     if (isEditMode && !canEdit && !authLoading && service) {
-      console.log("Access denied - disabling edit mode");
+
       setIsEditMode(false);
       toast({
         title: "Access Denied",
@@ -91,9 +79,35 @@ const ServiceDetailPage = () => {
       
       try {
         setLoading(true);
-        console.log("Fetching service with slug:", slug);
+
         
-        const response = await fetch(`/api/public/services/${slug}`);
+        // Try private API first (includes organizerId)
+        let response;
+        let data;
+        
+        try {
+          console.log("Trying private API...");
+          // First, get all services to find the service ID by slug
+          const services = await waitlistService.getServices();
+          const serviceMatch = services.find(service => service.slug === slug);
+          
+          if (serviceMatch) {
+            console.log("Found service match, fetching full details for ID:", serviceMatch.id);
+            // Now get the full service details using the ID
+            data = await waitlistService.getService(serviceMatch.id);
+            console.log("Found service from private API with full details:", data);
+            setService(data);
+            return;
+          } else {
+            console.log("Service not found in private API results");
+          }
+        } catch (privateError) {
+          console.log("Private API failed:", privateError);
+        }
+        
+        // Fall back to public API
+        console.log("Falling back to public API...");
+        response = await fetch(`/api/public/services/${slug}`);
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -104,11 +118,11 @@ const ServiceDetailPage = () => {
           return;
         }
         
-        const data = await response.json();
-        console.log("Fetched service data:", data);
+        data = await response.json();
+        console.log("Found service from public API:", data);
         setService(data);
       } catch (err) {
-        console.error("Error fetching service:", err);
+
         setError("Failed to load service details");
       } finally {
         setLoading(false);
@@ -144,13 +158,13 @@ const ServiceDetailPage = () => {
 
   const autoSave = useCallback(async (updatedService: ServiceDetail) => {
     if (!hasUnsavedChanges || isSaving || !updatedService.id) {
-      console.log("Auto-save skipped:", { hasUnsavedChanges, isSaving, hasId: !!updatedService.id });
+
       return;
     }
     
     try {
       setIsSaving(true);
-      console.log("Auto-saving service:", updatedService.id);
+
       
       // Prepare update data - only include fields that exist in UpdateServiceRequest
       const updateData = {
@@ -173,9 +187,10 @@ const ServiceDetailPage = () => {
         rating: updatedService.rating,
       };
       
-      console.log("Sending update data:", updateData);
+      console.log("Auto-save attempt - service ID:", updatedService.id);
+      console.log("Auto-save attempt - update data:", updateData);
       const result = await waitlistService.updateService(updatedService.id, updateData);
-      console.log("Auto-save successful:", result);
+      console.log("Auto-save result:", result);
       
       setHasUnsavedChanges(false);
       
@@ -185,7 +200,7 @@ const ServiceDetailPage = () => {
         duration: 2000,
       });
     } catch (err) {
-      console.error("Auto-save failed:", err);
+      console.error("Auto-save error:", err);
       toast({
         title: "Auto-save failed",
         description: "Your changes were not saved automatically. Please save manually.",
@@ -223,13 +238,13 @@ const ServiceDetailPage = () => {
 
   const handleSave = async () => {
     if (!service || !service.id) {
-      console.log("Manual save skipped - no service or ID");
+
       return;
     }
     
     try {
       setIsSaving(true);
-      console.log("Manual saving service:", service.id);
+
       
       // Prepare update data - only include fields that exist in UpdateServiceRequest
       const updateData = {
@@ -252,9 +267,10 @@ const ServiceDetailPage = () => {
         rating: service.rating,
       };
       
-      console.log("Manual save - sending update data:", updateData);
+      console.log("Manual save attempt - service ID:", service.id);
+      console.log("Manual save attempt - update data:", updateData);
       const updatedService = await waitlistService.updateService(service.id, updateData);
-      console.log("Manual save successful:", updatedService);
+      console.log("Manual save result:", updatedService);
       
       // Update the service with the response from API
       setService(prev => prev ? { ...prev, ...updatedService } : null);
@@ -267,7 +283,7 @@ const ServiceDetailPage = () => {
         description: "Service updated successfully!",
       });
     } catch (err) {
-      console.error("Failed to save service:", err);
+      console.error("Manual save error:", err);
       toast({
         title: "Error",
         description: "Failed to save service. Please try again.",
@@ -336,10 +352,10 @@ const ServiceDetailPage = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <WaitlistJoinForm 
-          waitlistTitle={service.waitlistTitle || service.title}
+          waitlistTitle={service.waitlistTitle || service.title || service.name}
           waitlistDescription={service.waitlistDescription || service.description}
           onJoin={(email) => {
-            console.log("User joined:", email);
+
             // TODO: Implement API call
           }}
         />
@@ -435,9 +451,9 @@ const ServiceDetailPage = () => {
                   onClick={() => isEditMode && canEdit && setEditingField('image')}
                 >
                   <Avatar className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl shadow-xl">
-                    <AvatarImage src={serviceImage} alt={service.title} />
+                    <AvatarImage src={serviceImage} alt={service.title || service.name} />
                     <AvatarFallback className="text-2xl font-bold bg-gradient-primary text-primary-foreground rounded-2xl">
-                      {service.icon || service.title.substring(0, 2).toUpperCase()}
+                      {service.icon || (service.title || service.name || service.name)?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   {isEditMode && (
@@ -450,7 +466,7 @@ const ServiceDetailPage = () => {
               
               <div className="flex-1 min-w-0">
                 <EditableField
-                  value={service.title || service.name}
+                  value={service.title || service.name || service.name}
                   onSave={(value) => handleFieldEdit('name', value)}
                   isEditing={isEditMode && canEdit && editingField === 'title'}
                   onEdit={() => canEdit && setEditingField('title')}
@@ -487,7 +503,7 @@ const ServiceDetailPage = () => {
                         className={`h-4 w-4 ${i < Math.floor(service.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
                       />
                     ))}
-                    <span className="text-sm text-muted-foreground ml-2">{service.rating.toFixed(1)}</span>
+                    <span className="text-sm text-muted-foreground ml-2">{service.rating?.toFixed(1) || 'N/A'}</span>
                   </div>
                   {service.category && (
                     <span className="text-sm text-muted-foreground">#{service.category}</span>
@@ -516,7 +532,7 @@ const ServiceDetailPage = () => {
                     <span className="text-sm text-muted-foreground">Waitlist</span>
                     <div className="flex items-center space-x-1">
                       <Users className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-semibold">{service.participantCount.toLocaleString()}</span>
+                      <span className="font-semibold">{(service.participantCount || 0).toLocaleString()}</span>
                     </div>
                   </div>
                   {service.platform && (
@@ -544,7 +560,7 @@ const ServiceDetailPage = () => {
         </div>
 
         {/* Screenshots Section */}
-        {screenshots && screenshots.length > 0 && (
+        {(
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-foreground mb-6">Preview</h2>
             <div className="flex gap-4 overflow-x-auto pb-4">
@@ -553,7 +569,7 @@ const ServiceDetailPage = () => {
                   <div className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-lg">
                     <img 
                       src={screenshot} 
-                      alt={`${service.title} screenshot ${index + 1}`}
+                      alt={`${service.title || service.name} screenshot ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -563,15 +579,15 @@ const ServiceDetailPage = () => {
           </div>
         )}
 
-        {/* Description Section */}
-        {service.fullDescription && (
+        {/* Description Section - Always show */}
+        {(
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-foreground mb-6">About {service.title}</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">About {service.title || service.name}</h2>
             <Card className="glass">
               <CardContent className="p-6">
                 <div className="prose prose-lg max-w-none text-foreground">
                   <EditableField
-                    value={service.fullDescription}
+                    value={service.fullDescription || service.description || "Add a detailed description of your service here..."}
                     onSave={(value) => handleFieldEdit('fullDescription', value)}
                     isEditing={isEditMode && canEdit && editingField === 'fullDescription'}
                     onEdit={() => canEdit && setEditingField('fullDescription')}
@@ -590,13 +606,20 @@ const ServiceDetailPage = () => {
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-foreground mb-6">Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {service.developer && (
+            { (
               <Card className="glass">
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-foreground mb-4">Developer</h3>
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">Company</p>
-                    <p className="font-medium">{service.developer}</p>
+                    <EditableField
+                      value={service.developer || "Independent Developer"}
+                      onSave={(value) => handleFieldEdit('developer', value)}
+                      isEditing={isEditMode && canEdit && editingField === 'developer-info'}
+                      onEdit={() => canEdit && setEditingField('developer-info')}
+                      onCancel={() => setEditingField(null)}
+                      className={isEditMode && canEdit ? 'cursor-pointer hover:bg-muted/30 rounded p-1' : 'font-medium'}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -637,7 +660,7 @@ const ServiceDetailPage = () => {
               Ready to join the waitlist?
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Be among the first to experience {service.title}. Join {service.participantCount.toLocaleString()} others who are already waiting.
+              Be among the first to experience {service.title || service.name}. Join {(service.participantCount || 0).toLocaleString()} others who are already waiting.
             </p>
             <Button 
               size="lg" 
