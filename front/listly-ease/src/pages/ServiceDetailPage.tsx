@@ -731,7 +731,7 @@ const ServiceDetailPage = () => {
                             }
                             handleFieldEdit('detailImages', newDetailImages);
                           }}
-                          className="aspect-[9/16] rounded-xl"
+                          className="aspect-[9:19.4] sm:aspect-[3:4] lg:aspect-[9:16] rounded-xl"
                           serviceId={service.id}
                           uploadType="detail"
                         />
@@ -752,9 +752,9 @@ const ServiceDetailPage = () => {
             ) : (
               <div className="flex gap-4 overflow-x-auto pb-4">
                 {screenshots.map((screenshot, index) => (
-                  <div key={index} className="flex-shrink-0 w-64 lg:w-80">
+                  <div key={index} className="flex-shrink-0 w-72 sm:w-80 md:w-96 lg:w-80 xl:w-96">
                     {isEditMode && canEdit && editingField === `detailImage-${index}` ? (
-                      <div className="aspect-[9/16] border-2 border-primary border-solid bg-primary/5 rounded-2xl p-2 animate-pulse">
+                      <div className="aspect-[9:19.4] sm:aspect-[3:4] lg:aspect-[9:16] border-2 border-primary border-solid bg-primary/5 rounded-2xl p-2 animate-pulse">
                         <ImageUpload
                           value={service.detailImages?.[index] || ''}
                           onChange={(value) => {
@@ -789,7 +789,7 @@ const ServiceDetailPage = () => {
                     ) : (
                       <div 
                         className={cn(
-                          "relative aspect-[9/16] rounded-2xl overflow-hidden shadow-lg transition-all duration-300",
+                          "relative aspect-[9:19.4] sm:aspect-[3:4] lg:aspect-[9:16] rounded-2xl overflow-hidden shadow-lg transition-all duration-300",
                           isEditMode && canEdit 
                             ? "border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/10"
                             : ""
@@ -813,9 +813,9 @@ const ServiceDetailPage = () => {
                 
                 {/* Add New Image Button - only show in edit mode if less than 5 images */}
                 {isEditMode && canEdit && (service.detailImages || []).length < 5 && (
-                  <div className="flex-shrink-0 w-64 lg:w-80">
+                  <div className="flex-shrink-0 w-72 sm:w-80 md:w-96 lg:w-80 xl:w-96">
                     {editingField === 'detailImage-new' ? (
-                      <div className="aspect-[9/16] border-2 border-primary border-solid bg-primary/5 rounded-2xl p-2 animate-pulse">
+                      <div className="aspect-[9:19.4] sm:aspect-[3:4] lg:aspect-[9:16] border-2 border-primary border-solid bg-primary/5 rounded-2xl p-2 animate-pulse">
                         <ImageUpload
                           value=""
                           onChange={(value) => {
@@ -843,7 +843,7 @@ const ServiceDetailPage = () => {
                       </div>
                     ) : (
                       <div 
-                        className="aspect-[9/16] border-2 border-dashed border-primary/40 rounded-2xl flex items-center justify-center cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all"
+                        className="aspect-[9:19.4] sm:aspect-[3:4] lg:aspect-[9:16] border-2 border-dashed border-primary/40 rounded-2xl flex items-center justify-center cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all"
                         onClick={() => setEditingField('detailImage-new')}
                       >
                         <div className="text-center">
