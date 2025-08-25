@@ -67,13 +67,13 @@ export function WaitlistJoinForm({
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="relative">
-          <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+          <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground z-10" />
           <Input
             type="email"
             placeholder="Enter your email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="pl-12 h-14 text-lg rounded-2xl glass border-0 focus:ring-2 focus:ring-primary text-center"
+            className="pl-12 pr-4 h-16 text-lg rounded-2xl bg-background/90 backdrop-blur-sm border-2 border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 placeholder:text-muted-foreground/60 text-left"
             required
           />
         </div>

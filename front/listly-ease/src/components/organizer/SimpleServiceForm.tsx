@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
+import { CategorySelector } from "@/components/ui/CategorySelector";
 import { waitlistService } from "@/services/waitlist.service";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +16,7 @@ interface SimpleServiceFormData {
   description: string;
   slug: string;
   launchDate: string;
+  categories: string[];
 }
 
 interface SimpleServiceFormProps {
@@ -31,16 +33,17 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
     description: "",
     slug: "",
     launchDate: "",
+    categories: [],
   });
 
-  const handleInputChange = (field: keyof SimpleServiceFormData, value: string) => {
+  const handleInputChange = (field: keyof SimpleServiceFormData, value: string | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
 
     // Auto-generate slug from name
-    if (field === 'name') {
+    if (field === 'name' && typeof value === 'string') {
       const slug = value
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
@@ -93,7 +96,8 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
         waitlistDescription: formData.description,
         waitlistBackground: "#ffffff",
         iconImage: "", // New structure: separate icon image
-        category: "General",
+        categories: formData.categories, // Use categories array
+        category: formData.categories[0] || "General", // Legacy field for backward compatibility
         tagline: formData.description,
         fullDescription: formData.description,
         developer: "Independent Developer",
@@ -179,6 +183,20 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
               disabled={isLoading}
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Categories (Max 3)</Label>
+            <CategorySelector
+              value={formData.categories}
+              onChange={(value) => handleInputChange('categories', value)}
+              disabled={isLoading}
+              placeholder="Select up to 3 categories..."
+              maxSelections={3}
+            />
+            <p className="text-sm text-muted-foreground">
+              Choose categories that best describe your service to help users discover it.
+            </p>
           </div>
 
           <DateTimePicker

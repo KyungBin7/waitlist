@@ -79,7 +79,31 @@ export default function DashboardPage() {
   };
 
   const handleDeleteService = async (service: Service) => {
-    if (!confirm(`Are you sure you want to delete "${service.name}"? This action cannot be undone.`)) {
+    const confirmMessage = `⚠️ DELETE SERVICE CONFIRMATION ⚠️
+
+Service: "${service.name}"
+Participants: ${service.participantCount} people
+Created: ${new Date(service.createdAt).toLocaleDateString()}
+
+This will permanently delete:
+• All participant data and emails
+• Service configuration and settings
+• Waitlist URL and public page
+
+This action CANNOT be undone!
+
+Type "${service.name}" to confirm deletion:`;
+
+    const userInput = prompt(confirmMessage);
+    
+    if (userInput !== service.name) {
+      if (userInput !== null) { // User didn't cancel
+        toast({
+          title: "Deletion cancelled",
+          description: "Service name didn't match. Deletion cancelled for safety.",
+          variant: "destructive",
+        });
+      }
       return;
     }
 
@@ -237,9 +261,9 @@ export default function DashboardPage() {
                       
                       <div className="space-y-2">
                         <Button variant="outline" size="sm" className="w-full" asChild>
-                          <Link to={service.waitlistUrl} target="_blank">
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            View Public Page
+                          <Link to={`/service/${service.slug}`}>
+                            <Settings className="h-4 w-4 mr-2" />
+                            View Service Details
                           </Link>
                         </Button>
                         <div className="flex gap-2">

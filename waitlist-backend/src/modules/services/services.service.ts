@@ -26,10 +26,28 @@ export class ServicesService {
     organizerId: string,
   ): Promise<ServiceDocument> {
     try {
-      const service = new this.serviceModel({
+      // Handle backward compatibility: if category is provided but categories is not
+      const serviceData = {
         ...createServiceDto,
         organizerId: new Types.ObjectId(organizerId),
-      });
+      };
+      
+      // If only legacy category field is provided, also set it in categories array
+      if (createServiceDto.category && !createServiceDto.categories?.length) {
+        serviceData.categories = [createServiceDto.category];
+      }
+
+      // Handle backward compatibility for languages
+      if (createServiceDto.language && !createServiceDto.languages?.length) {
+        serviceData.languages = [createServiceDto.language];
+      }
+
+      // Handle backward compatibility for platforms
+      if (createServiceDto.platform && !createServiceDto.platforms?.length) {
+        serviceData.platforms = [createServiceDto.platform];
+      }
+
+      const service = new this.serviceModel(serviceData);
 
       return await service.save();
     } catch (error: any) {
@@ -139,6 +157,21 @@ export class ServicesService {
         ...updateServiceDto,
         updatedAt: new Date(),
       };
+      
+      // Handle backward compatibility: if category is provided but categories is not
+      if (updateServiceDto.category && !updateServiceDto.categories?.length) {
+        updateData.categories = [updateServiceDto.category];
+      }
+
+      // Handle backward compatibility for languages
+      if (updateServiceDto.language && !updateServiceDto.languages?.length) {
+        updateData.languages = [updateServiceDto.language];
+      }
+
+      // Handle backward compatibility for platforms
+      if (updateServiceDto.platform && !updateServiceDto.platforms?.length) {
+        updateData.platforms = [updateServiceDto.platform];
+      }
 
       console.log('Update data being applied:', updateData);
 

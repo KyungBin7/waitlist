@@ -16,6 +16,7 @@ export class PublicServicesController {
       slug: service.slug,
       iconImage: service.iconImage,
       category: service.category,
+      categories: service.categories,
       participantCount: (service as any).participantCount || 0,
     }));
   }
@@ -41,12 +42,15 @@ export class PublicServicesController {
       slug: service.slug,
       iconImage: service.iconImage,
       category: service.category,
+      categories: service.categories,
       tagline: service.tagline,
       fullDescription: service.fullDescription,
       participantCount: participantCount,
       developer: service.developer,
       language: service.language,
+      languages: service.languages,
       platform: service.platform,
+      platforms: service.platforms,
       launchDate: service.launchDate,
       detailImages: service.detailImages || [],
 

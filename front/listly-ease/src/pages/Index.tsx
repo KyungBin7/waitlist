@@ -18,7 +18,8 @@ interface WaitlistItem {
   description: string;
   image: string;
   participantCount: number;
-  category: string;
+  category: string; // Legacy field
+  categories?: string[]; // New field
 }
 
 interface CategoryConfig {
@@ -124,13 +125,27 @@ const Index = () => {
       let matchesMainCategory = true;
       if (selectedMainCategory !== 'all') {
         const categoryConfig = CATEGORY_CONFIG.find(cat => cat.id === selectedMainCategory);
-        matchesMainCategory = categoryConfig ? 
-          categoryConfig.subcategories.includes(waitlist.category) : false;
+        if (categoryConfig) {
+          // Check if any of the service categories matches the selected main category's subcategories
+          const serviceCategories = waitlist.categories?.length 
+            ? waitlist.categories 
+            : (waitlist.category ? [waitlist.category] : []);
+          matchesMainCategory = serviceCategories.some(cat => 
+            categoryConfig.subcategories.includes(cat)
+          );
+        } else {
+          matchesMainCategory = false;
+        }
       }
       
       // Sub category filter
-      const matchesSubCategory = selectedSubCategory === 'all' || 
-        waitlist.category === selectedSubCategory;
+      let matchesSubCategory = selectedSubCategory === 'all';
+      if (!matchesSubCategory) {
+        const serviceCategories = waitlist.categories?.length 
+          ? waitlist.categories 
+          : (waitlist.category ? [waitlist.category] : []);
+        matchesSubCategory = serviceCategories.includes(selectedSubCategory);
+      }
       
       return matchesSearch && matchesMainCategory && matchesSubCategory;
     });
@@ -147,16 +162,16 @@ const Index = () => {
   }, [selectedMainCategory]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative">
       {/* Background */}
       <div 
-        className="absolute inset-0 bg-cover bg-center"
+        className="fixed inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${heroBackground})` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-background/95 to-background/85 backdrop-blur-sm" />
+      <div className="fixed inset-0 bg-gradient-to-br from-background/95 to-background/85 backdrop-blur-sm" />
       
       {/* Navigation */}
-      <nav className="relative z-10 glass border-b border-border/50">
+      <nav className="glass border-b border-border/50 fixed top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
@@ -202,7 +217,7 @@ const Index = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="relative z-10">
+      <main className="relative z-10 pt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Header */}
           <div className="text-center mb-12 animate-fade-in">
@@ -368,9 +383,24 @@ const Index = () => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       <div className="absolute top-3 right-3 transform transition-all duration-300 group-hover:scale-110">
-                        <span className="px-3 py-1.5 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-xs font-semibold rounded-full backdrop-blur-md shadow-lg">
-                          {waitlist.category}
-                        </span>
+                        {waitlist.categories?.length ? (
+                          <div className="flex flex-col gap-1">
+                            {waitlist.categories.slice(0, 2).map((category, idx) => (
+                              <span key={idx} className="px-2 py-1 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-xs font-semibold rounded-full backdrop-blur-md shadow-lg">
+                                {category}
+                              </span>
+                            ))}
+                            {waitlist.categories.length > 2 && (
+                              <span className="px-2 py-1 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-xs font-semibold rounded-full backdrop-blur-md shadow-lg">
+                                +{waitlist.categories.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        ) : waitlist.category ? (
+                          <span className="px-3 py-1.5 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-xs font-semibold rounded-full backdrop-blur-md shadow-lg">
+                            {waitlist.category}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
                     

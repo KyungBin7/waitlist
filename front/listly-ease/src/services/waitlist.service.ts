@@ -10,14 +10,17 @@ export interface Service {
   waitlistDescription?: string;
   waitlistBackground?: string;
   image?: string;
-  category?: string;
+  category?: string; // Legacy field for backward compatibility
+  categories?: string[]; // New field for multiple categories (max 3)
   tagline?: string;
   fullDescription?: string;
   icon?: string;
   participantCount: number;
   developer?: string;
-  language?: string;
-  platform?: string;
+  language?: string; // Legacy field
+  languages?: string[]; // New field for multiple languages
+  platform?: string; // Legacy field
+  platforms?: string[]; // New field for multiple platforms
   launchDate?: string;
   screenshots?: string[];
   rating?: number;
@@ -34,13 +37,16 @@ export interface CreateServiceRequest {
   waitlistDescription?: string;
   waitlistBackground?: string;
   image?: string;
-  category?: string;
+  category?: string; // Legacy field
+  categories?: string[]; // New field for multiple categories (max 3)
   tagline?: string;
   fullDescription?: string;
   icon?: string;
   developer?: string;
-  language?: string;
-  platform?: string;
+  language?: string; // Legacy field
+  languages?: string[]; // New field
+  platform?: string; // Legacy field
+  platforms?: string[]; // New field
   launchDate?: string;
   screenshots?: string[];
   rating?: number;
@@ -54,13 +60,16 @@ export interface UpdateServiceRequest {
   waitlistDescription?: string;
   waitlistBackground?: string;
   image?: string;
-  category?: string;
+  category?: string; // Legacy field
+  categories?: string[]; // New field for multiple categories (max 3)
   tagline?: string;
   fullDescription?: string;
   icon?: string;
   developer?: string;
-  language?: string;
-  platform?: string;
+  language?: string; // Legacy field
+  languages?: string[]; // New field
+  platform?: string; // Legacy field
+  platforms?: string[]; // New field
   launchDate?: string;
   screenshots?: string[];
   rating?: number;
@@ -112,7 +121,12 @@ class WaitlistService {
       
       if (response.status === 401) {
         tokenStorage.remove();
-        window.location.href = '/login';
+        // Only redirect to login if this is NOT a public endpoint
+        if (!endpoint.startsWith('/public/')) {
+          // Don't redirect automatically, just throw the error
+          // Let the calling code decide what to do
+          throw new Error('Authentication required');
+        }
         throw new Error('Session expired. Please log in again.');
       }
       
@@ -177,8 +191,8 @@ class WaitlistService {
   }
 
   // Public services endpoint
-  async getAllPublicServices(): Promise<Pick<Service, 'id' | 'name' | 'description' | 'slug' | 'image' | 'category' | 'participantCount'>[]> {
-    return this.makeRequest<Pick<Service, 'id' | 'name' | 'description' | 'slug' | 'image' | 'category' | 'participantCount'>[]>('/public/services');
+  async getAllPublicServices(): Promise<Pick<Service, 'id' | 'name' | 'description' | 'slug' | 'image' | 'category' | 'categories' | 'participantCount'>[]> {
+    return this.makeRequest<Pick<Service, 'id' | 'name' | 'description' | 'slug' | 'image' | 'category' | 'categories' | 'participantCount'>[]>('/public/services');
   }
 
   // Helper method to download CSV

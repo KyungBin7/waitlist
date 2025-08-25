@@ -104,7 +104,7 @@ export default function AccountSettingsPage() {
       
       <div className="relative z-10">
         {/* Header */}
-        <header className="glass border-b border-border/50">
+        <header className="glass border-b border-border/50 sticky top-0 z-10">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-4">

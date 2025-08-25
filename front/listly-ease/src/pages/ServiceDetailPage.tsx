@@ -15,6 +15,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import premiumAppImage from "@/assets/premium-app.jpg";
 import DdayCounter from "@/components/ui/DdayCounter";
+import { CategorySelector } from "@/components/ui/CategorySelector";
+import { PlatformSelector } from "@/components/ui/PlatformSelector";
+import { LanguageSelector } from "@/components/ui/LanguageSelector";
 import betaTestingImage from "@/assets/beta-testing.jpg";
 import courseImage from "@/assets/course.jpg";
 
@@ -25,13 +28,16 @@ interface ServiceDetail {
   description?: string;
   slug: string;
   iconImage?: string; // For service icon/avatar
-  category?: string;
+  category?: string; // Legacy field
+  categories?: string[]; // New field for multiple categories
   tagline?: string;
   fullDescription?: string;
   participantCount: number;
   developer?: string;
-  language?: string;
-  platform?: string;
+  language?: string; // Legacy field
+  languages?: string[]; // New field
+  platform?: string; // Legacy field
+  platforms?: string[]; // New field
   launchDate?: string;
   detailImages?: string[]; // For Screenshots/Preview section
 
@@ -82,28 +88,32 @@ const ServiceDetailPage = () => {
         setLoading(true);
 
         
-        // Try private API first (includes organizerId)
+        // Try private API first (includes organizerId) - only if authenticated
         let response;
         let data;
         
-        try {
-          console.log("Trying private API...");
-          // First, get all services to find the service ID by slug
-          const services = await waitlistService.getServices();
-          const serviceMatch = services.find(service => service.slug === slug);
-          
-          if (serviceMatch) {
-            console.log("Found service match, fetching full details for ID:", serviceMatch.id);
-            // Now get the full service details using the ID
-            data = await waitlistService.getService(serviceMatch.id);
-            console.log("Found service from private API with full details:", data);
-            setService(data);
-            return;
-          } else {
-            console.log("Service not found in private API results");
+        // Only try private API if user is authenticated
+        if (isAuthenticated && !authLoading) {
+          try {
+            console.log("User is authenticated, trying private API...");
+            // First, get all services to find the service ID by slug
+            const services = await waitlistService.getServices();
+            const serviceMatch = services.find(service => service.slug === slug);
+            
+            if (serviceMatch) {
+              console.log("Found service match, fetching full details for ID:", serviceMatch.id);
+              // Now get the full service details using the ID
+              data = await waitlistService.getService(serviceMatch.id);
+              console.log("Found service from private API with full details:", data);
+              setService(data);
+              return;
+            } else {
+              console.log("Service not found in private API results");
+            }
+          } catch (privateError) {
+            console.log("Private API failed:", privateError);
+            // Continue to public API fallback
           }
-        } catch (privateError) {
-          console.log("Private API failed:", privateError);
         }
         
         // Fall back to public API
@@ -131,7 +141,7 @@ const ServiceDetailPage = () => {
     };
 
     fetchService();
-  }, [slug]);
+  }, [slug, isAuthenticated, authLoading]);
 
   const validateField = useCallback((field: string, value: any): string | null => {
     switch (field) {
@@ -176,12 +186,15 @@ const ServiceDetailPage = () => {
         waitlistDescription: updatedService.waitlistDescription,
         waitlistBackground: '#ffffff', // Default value
         iconImage: updatedService.iconImage,
-        category: updatedService.category,
+        category: updatedService.categories?.[0] || updatedService.category,
+        categories: updatedService.categories,
         tagline: updatedService.tagline,
         fullDescription: updatedService.fullDescription,
         developer: updatedService.developer,
-        language: updatedService.language,
-        platform: updatedService.platform,
+        language: updatedService.languages?.[0] || updatedService.language,
+        languages: updatedService.languages,
+        platform: updatedService.platforms?.[0] || updatedService.platform,
+        platforms: updatedService.platforms,
         launchDate: updatedService.launchDate,
         detailImages: updatedService.detailImages,
 
@@ -256,12 +269,15 @@ const ServiceDetailPage = () => {
         waitlistDescription: service.waitlistDescription,
         waitlistBackground: '#ffffff', // Default value
         iconImage: service.iconImage,
-        category: service.category,
+        category: service.categories?.[0] || service.category,
+        categories: service.categories,
         tagline: service.tagline,
         fullDescription: service.fullDescription,
         developer: service.developer,
-        language: service.language,
-        platform: service.platform,
+        language: service.languages?.[0] || service.language,
+        languages: service.languages,
+        platform: service.platforms?.[0] || service.platform,
+        platforms: service.platforms,
         launchDate: service.launchDate,
         detailImages: service.detailImages,
 
@@ -292,6 +308,42 @@ const ServiceDetailPage = () => {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Helper function to format launch date
+  const formatLaunchDate = (launchDate?: string): string | null => {
+    if (!launchDate) return null;
+    
+    try {
+      const date = new Date(launchDate);
+      if (isNaN(date.getTime())) return launchDate; // Return original if invalid
+      
+      const now = new Date();
+      const diffTime = date.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      // Format the date nicely
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      };
+      const formattedDate = date.toLocaleDateString('en-US', options);
+      
+      // Add relative time info
+      if (diffDays > 0) {
+        if (diffDays === 1) return `${formattedDate} (Tomorrow)`;
+        if (diffDays <= 7) return `${formattedDate} (${diffDays} days)`;
+        if (diffDays <= 30) return `${formattedDate} (${Math.ceil(diffDays/7)} weeks)`;
+        return formattedDate;
+      } else if (diffDays === 0) {
+        return `${formattedDate} (Today)`;
+      } else {
+        return `${formattedDate} (Launched)`;
+      }
+    } catch (error) {
+      return launchDate; // Return original if parsing fails
     }
   };
 
@@ -581,28 +633,58 @@ const ServiceDetailPage = () => {
                       <span className="font-semibold">{(service.participantCount || 0).toLocaleString()}</span>
                     </div>
                   </div>
-                  {service.category && (
-                    <div className="flex justify-between items-center">
+                  {(service.categories?.length || service.category) && (
+                    <div className="flex justify-between items-start">
                       <span className="text-sm text-muted-foreground">Category</span>
-                      <Badge variant="secondary">{service.category}</Badge>
+                      <div className="flex flex-wrap gap-1 justify-end">
+                        {service.categories?.length ? (
+                          service.categories.map((cat) => (
+                            <Badge key={cat} variant="secondary" className="text-xs">
+                              {cat}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Badge variant="secondary">{service.category}</Badge>
+                        )}
+                      </div>
                     </div>
                   )}
-                  {service.platform && (
-                    <div className="flex justify-between items-center">
+                  {(service.platforms?.length || service.platform) && (
+                    <div className="flex justify-between items-start">
                       <span className="text-sm text-muted-foreground">Platform</span>
-                      <span className="text-sm font-medium">{service.platform}</span>
+                      <div className="flex flex-wrap gap-1 justify-end">
+                        {service.platforms?.length ? (
+                          service.platforms.map((platform) => (
+                            <Badge key={platform} variant="outline" className="text-xs">
+                              {platform}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Badge variant="outline" className="text-xs">{service.platform}</Badge>
+                        )}
+                      </div>
                     </div>
                   )}
                   {service.launchDate && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Launch</span>
-                      <span className="text-sm font-medium">{service.launchDate}</span>
+                      <span className="text-sm font-medium">{formatLaunchDate(service.launchDate)}</span>
                     </div>
                   )}
-                  {service.language && (
-                    <div className="flex justify-between items-center">
+                  {(service.languages?.length || service.language) && (
+                    <div className="flex justify-between items-start">
                       <span className="text-sm text-muted-foreground">Language</span>
-                      <span className="text-sm font-medium">{service.language}</span>
+                      <div className="flex flex-wrap gap-1 justify-end">
+                        {service.languages?.length ? (
+                          service.languages.map((language) => (
+                            <Badge key={language} variant="outline" className="text-xs">
+                              {language}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Badge variant="outline" className="text-xs">{service.language}</Badge>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -844,22 +926,148 @@ const ServiceDetailPage = () => {
               <CardContent className="p-6">
                 <h3 className="font-semibold text-foreground mb-4">Details</h3>
                 <div className="space-y-3">
-                  {service.category && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Category</span>
-                      <Badge variant="secondary">{service.category}</Badge>
+                  {(service.categories?.length || service.category) && (
+                    <div>
+                      <span className="text-sm text-muted-foreground">Categories</span>
+                      {isEditMode && canEdit && editingField === 'categories' ? (
+                        <div className="mt-2 border-2 border-primary border-solid bg-primary/5 rounded-lg p-3 animate-pulse">
+                          <CategorySelector
+                            value={service.categories || (service.category ? [service.category] : [])}
+                            onChange={(value) => handleFieldEdit('categories', value)}
+                            disabled={false}
+                            placeholder="Select up to 3 categories..."
+                            maxSelections={3}
+                          />
+                          <div className="flex gap-2 mt-3">
+                            <Button 
+                              size="sm" 
+                              onClick={() => setEditingField(null)} 
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              ✓ Done
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div 
+                          className={cn(
+                            "mt-2 flex flex-wrap gap-1",
+                            isEditMode && canEdit && 
+                            "border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/10 rounded-lg p-2"
+                          )}
+                          onClick={() => isEditMode && canEdit && setEditingField('categories')}
+                        >
+                          {service.categories?.length ? (
+                            service.categories.map((cat) => (
+                              <Badge key={cat} variant="secondary" className="text-xs">
+                                {cat}
+                              </Badge>
+                            ))
+                          ) : service.category ? (
+                            <Badge variant="secondary">{service.category}</Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No categories selected</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
-                  {service.platform && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Platform</span>
-                      <span className="text-sm">{service.platform}</span>
+                  {(service.platforms?.length || service.platform) && (
+                    <div>
+                      <span className="text-sm text-muted-foreground">Platforms</span>
+                      {isEditMode && canEdit && editingField === 'platforms' ? (
+                        <div className="mt-2 border-2 border-primary border-solid bg-primary/5 rounded-lg p-3 animate-pulse">
+                          <PlatformSelector
+                            value={service.platforms || (service.platform ? [service.platform] : [])}
+                            onChange={(value) => handleFieldEdit('platforms', value)}
+                            disabled={false}
+                            placeholder="Select platforms..."
+                            maxSelections={10}
+                          />
+                          <div className="flex gap-2 mt-3">
+                            <Button 
+                              size="sm" 
+                              onClick={() => setEditingField(null)} 
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              ✓ Done
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div 
+                          className={cn(
+                            "mt-2 flex flex-wrap gap-1",
+                            isEditMode && canEdit && 
+                            "border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/10 rounded-lg p-2"
+                          )}
+                          onClick={() => isEditMode && canEdit && setEditingField('platforms')}
+                        >
+                          {service.platforms?.length ? (
+                            service.platforms.map((platform) => (
+                              <Badge key={platform} variant="outline" className="text-xs">
+                                {platform}
+                              </Badge>
+                            ))
+                          ) : service.platform ? (
+                            <Badge variant="outline">{service.platform}</Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No platforms selected</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {(service.languages?.length || service.language) && (
+                    <div>
+                      <span className="text-sm text-muted-foreground">Languages</span>
+                      {isEditMode && canEdit && editingField === 'languages' ? (
+                        <div className="mt-2 border-2 border-primary border-solid bg-primary/5 rounded-lg p-3 animate-pulse">
+                          <LanguageSelector
+                            value={service.languages || (service.language ? [service.language] : [])}
+                            onChange={(value) => handleFieldEdit('languages', value)}
+                            disabled={false}
+                            placeholder="Select languages..."
+                            maxSelections={10}
+                          />
+                          <div className="flex gap-2 mt-3">
+                            <Button 
+                              size="sm" 
+                              onClick={() => setEditingField(null)} 
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              ✓ Done
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div 
+                          className={cn(
+                            "mt-2 flex flex-wrap gap-1",
+                            isEditMode && canEdit && 
+                            "border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/10 rounded-lg p-2"
+                          )}
+                          onClick={() => isEditMode && canEdit && setEditingField('languages')}
+                        >
+                          {service.languages?.length ? (
+                            service.languages.map((language) => (
+                              <Badge key={language} variant="outline" className="text-xs">
+                                {language}
+                              </Badge>
+                            ))
+                          ) : service.language ? (
+                            <Badge variant="outline">{service.language}</Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No languages selected</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                   {service.launchDate && (
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Launch Date</span>
-                      <span className="text-sm">{service.launchDate}</span>
+                      <span className="text-sm">{formatLaunchDate(service.launchDate)}</span>
                     </div>
                   )}
                 </div>

@@ -36,8 +36,13 @@ export class Service {
   @Prop({ type: [String], default: [] })
   detailImages!: string[]; // For Screenshots/Preview section in detail page
 
+  // Legacy single category field (for backward compatibility)
   @Prop()
   category?: string;
+
+  // New categories array field (max 3 categories)
+  @Prop({ type: [String], default: [] })
+  categories!: string[];
 
   // New fields for service detail page
   @Prop()
@@ -52,11 +57,19 @@ export class Service {
   @Prop()
   developer?: string;
 
+  // Legacy single fields (for backward compatibility)
   @Prop()
   language?: string;
 
   @Prop()
   platform?: string;
+
+  // New array fields for multiple selections
+  @Prop({ type: [String], default: [] })
+  languages!: string[];
+
+  @Prop({ type: [String], default: [] })
+  platforms!: string[];
 
   @Prop()
   launchDate?: string;

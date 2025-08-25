@@ -6,6 +6,7 @@ import {
   MaxLength,
   IsArray,
   IsDateString,
+  ArrayMaxSize,
 } from 'class-validator';
 
 export class CreateServiceDto {
@@ -53,10 +54,18 @@ export class CreateServiceDto {
   @IsString({ each: true })
   detailImages?: string[];
 
+  // Legacy single category field (for backward compatibility)
   @IsString()
   @IsOptional()
   @MaxLength(50)
   category?: string;
+
+  // New categories array field (max 3 categories)
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  @ArrayMaxSize(3, { message: 'Maximum 3 categories allowed' })
+  categories?: string[];
 
   // New fields for service detail page
   @IsString()
@@ -74,6 +83,7 @@ export class CreateServiceDto {
   @MaxLength(100)
   developer?: string;
 
+  // Legacy single fields (for backward compatibility)
   @IsString()
   @IsOptional()
   @MaxLength(50)
@@ -83,6 +93,19 @@ export class CreateServiceDto {
   @IsOptional()
   @MaxLength(100)
   platform?: string;
+
+  // New array fields for multiple selections
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  @ArrayMaxSize(10, { message: 'Maximum 10 languages allowed' })
+  languages?: string[];
+
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  @ArrayMaxSize(10, { message: 'Maximum 10 platforms allowed' })
+  platforms?: string[];
 
   @IsDateString()
   @IsOptional()

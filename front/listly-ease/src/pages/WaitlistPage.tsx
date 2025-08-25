@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { WaitlistJoinForm } from "@/components/waitlist/WaitlistJoinForm";
 import { waitlistService, WaitlistDetails } from "@/services/waitlist.service";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import heroBackground from "@/assets/hero-bg.jpg";
 
 export default function WaitlistPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [waitlistData, setWaitlistData] = useState<WaitlistDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,6 +103,16 @@ export default function WaitlistPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Back button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute top-4 left-4 z-20 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </Button>
+
       {/* Dynamic Background */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
