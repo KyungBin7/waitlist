@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { waitlistService, Service } from "@/services/waitlist.service";
 import { useToast } from "@/hooks/use-toast";
+import { DeleteServiceDialog } from "@/components/service/DeleteServiceDialog";
 
 export default function DashboardPage() {
   const { logout, user } = useAuth();
@@ -78,50 +79,8 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDeleteService = async (service: Service) => {
-    const confirmMessage = `⚠️ DELETE SERVICE CONFIRMATION ⚠️
-
-Service: "${service.name}"
-Participants: ${service.participantCount} people
-Created: ${new Date(service.createdAt).toLocaleDateString()}
-
-This will permanently delete:
-• All participant data and emails
-• Service configuration and settings
-• Waitlist URL and public page
-
-This action CANNOT be undone!
-
-Type "${service.name}" to confirm deletion:`;
-
-    const userInput = prompt(confirmMessage);
-    
-    if (userInput !== service.name) {
-      if (userInput !== null) { // User didn't cancel
-        toast({
-          title: "Deletion cancelled",
-          description: "Service name didn't match. Deletion cancelled for safety.",
-          variant: "destructive",
-        });
-      }
-      return;
-    }
-
-    try {
-      await waitlistService.deleteService(service.id);
-      toast({
-        title: "Success",
-        description: `${service.name} has been deleted`,
-      });
-      await loadServices(); // Reload services
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete service';
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
+  const handleServiceDeleted = () => {
+    loadServices(); // Reload services after deletion
   };
 
   useEffect(() => {
@@ -276,13 +235,10 @@ Type "${service.name}" to confirm deletion:`;
                             <Download className="h-4 w-4 mr-2" />
                             Download CSV
                           </Button>
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => handleDeleteService(service)}
-                          >
-                            Delete
-                          </Button>
+                          <DeleteServiceDialog 
+                            service={service}
+                            onDeleted={handleServiceDeleted}
+                          />
                         </div>
                       </div>
                     </CardContent>
