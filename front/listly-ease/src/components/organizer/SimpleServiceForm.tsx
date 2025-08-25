@@ -92,16 +92,15 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
         waitlistTitle: `Join the waitlist for ${formData.name}`,
         waitlistDescription: formData.description,
         waitlistBackground: "#ffffff",
-        image: "",
+        iconImage: "", // New structure: separate icon image
         category: "General",
         tagline: formData.description,
         fullDescription: formData.description,
-        icon: formData.name.substring(0, 2).toUpperCase(),
         developer: "Independent Developer",
         language: "EN",
         platform: "Web",
         launchDate: formData.launchDate || undefined,
-        screenshots: [],
+        detailImages: [], // New structure: separate detail images
       });
       
       toast({

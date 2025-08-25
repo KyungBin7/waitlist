@@ -42,10 +42,16 @@ export class CreateServiceDto {
   @MaxLength(200)
   waitlistBackground?: string;
 
+  // Separated image fields
   @IsString()
   @IsOptional()
   @MaxLength(200)
-  image?: string;
+  iconImage?: string;
+
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  detailImages?: string[];
 
   @IsString()
   @IsOptional()
@@ -65,11 +71,6 @@ export class CreateServiceDto {
 
   @IsString()
   @IsOptional()
-  @MaxLength(10)
-  icon?: string;
-
-  @IsString()
-  @IsOptional()
   @MaxLength(100)
   developer?: string;
 
@@ -86,10 +87,4 @@ export class CreateServiceDto {
   @IsDateString()
   @IsOptional()
   launchDate?: string;
-
-  @IsArray()
-  @IsOptional()
-  @IsString({ each: true })
-  screenshots?: string[];
-
 }

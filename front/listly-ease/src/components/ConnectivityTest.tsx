@@ -105,9 +105,9 @@ export const ConnectivityTest: React.FC<ConnectivityTestProps> = ({ className })
       </div>
 
       <div className="text-sm text-gray-600">
-        <p><strong>Backend URL:</strong> http://localhost:3001</p>
+        <p><strong>Backend URL:</strong> http://localhost:3000</p>
         <p><strong>Frontend URL:</strong> http://localhost:8080</p>
-        <p><strong>API Proxy:</strong> /api/* → http://localhost:3001/*</p>
+        <p><strong>API Proxy:</strong> /api/* → http://localhost:3000/*</p>
       </div>
     </div>
   );

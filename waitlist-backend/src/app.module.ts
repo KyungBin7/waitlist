@@ -14,19 +14,21 @@ import {
   ServiceSchema,
 } from './modules/services/schemas/service.schema';
 import { ParticipantsModule } from './modules/participants/participants.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { LoggerMiddleware } from './shared/middleware/logger.middleware';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import corsConfig from './config/cors.config';
 import throttleConfig from './config/throttle.config';
 import appConfig from './config/app.config';
+import minioConfig from './config/minio.config';
 import { validate } from './config/env.validation';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, jwtConfig, corsConfig, throttleConfig, appConfig],
+      load: [databaseConfig, jwtConfig, corsConfig, throttleConfig, appConfig, minioConfig],
       validate,
       cache: true,
       expandVariables: true,
@@ -49,6 +51,7 @@ import { validate } from './config/env.validation';
     AuthModule,
     ServicesModule,
     ParticipantsModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

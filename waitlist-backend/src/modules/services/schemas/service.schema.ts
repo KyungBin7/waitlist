@@ -29,8 +29,12 @@ export class Service {
   @Prop()
   waitlistBackground?: string;
 
+  // Separated image fields
   @Prop()
-  image?: string;
+  iconImage?: string; // For service icon/avatar in lists and detail header
+
+  @Prop({ type: [String], default: [] })
+  detailImages!: string[]; // For Screenshots/Preview section in detail page
 
   @Prop()
   category?: string;
@@ -41,9 +45,6 @@ export class Service {
 
   @Prop()
   fullDescription?: string;
-
-  @Prop()
-  icon?: string;
 
   @Prop({ default: 0 })
   participantCount!: number;
@@ -59,10 +60,6 @@ export class Service {
 
   @Prop()
   launchDate?: string;
-
-  @Prop({ type: [String], default: [] })
-  screenshots!: string[];
-
 
   @Prop({ default: Date.now })
   createdAt!: Date;

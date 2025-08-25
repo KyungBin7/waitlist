@@ -81,7 +81,7 @@ const Index = () => {
           slug: service.slug,
           name: service.name,
           description: service.description || '',
-          image: service.image || premiumAppImage, // fallback to default image
+          image: service.iconImage || premiumAppImage, // fallback to default image
           participantCount: service.participantCount,
           category: service.category || 'General'
         }));

@@ -18,17 +18,15 @@ interface ServiceFormData {
   waitlistTitle: string;
   waitlistDescription: string;
   waitlistBackground: string;
-  image: string;
+  iconImage: string; // Changed from image
   category: string;
   tagline: string;
   fullDescription: string;
-  icon: string;
   developer: string;
   language: string;
   platform: string;
   launchDate: string;
-  screenshots: string[];
-  rating: number;
+  detailImages: string[]; // Changed from screenshots
 }
 
 interface ServiceFormProps {
@@ -48,17 +46,15 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
     waitlistTitle: "",
     waitlistDescription: "",
     waitlistBackground: "#ffffff",
-    image: "",
+    iconImage: "",
     category: "",
     tagline: "",
     fullDescription: "",
-    icon: "",
     developer: "",
     language: "EN",
     platform: "Web",
     launchDate: "",
-    screenshots: [],
-    rating: 4.5,
+    detailImages: [],
   });
 
   const handleInputChange = (field: keyof ServiceFormData, value: any) => {
@@ -121,10 +117,10 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
   ];
 
   const addScreenshot = () => {
-    if (screenshotInput.trim() && formData.screenshots.length < 5) {
+    if (screenshotInput.trim() && formData.detailImages.length < 5) {
       setFormData(prev => ({
         ...prev,
-        screenshots: [...prev.screenshots, screenshotInput.trim()]
+        detailImages: [...prev.detailImages, screenshotInput.trim()]
       }));
       setScreenshotInput("");
     }
@@ -133,7 +129,7 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
   const removeScreenshot = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      screenshots: prev.screenshots.filter((_, i) => i !== index)
+      detailImages: prev.detailImages.filter((_, i) => i !== index)
     }));
   };
 
@@ -167,7 +163,27 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
       setIsLoading(true);
       setError(null);
       
-      const service = await waitlistService.createService(formData);
+      // Transform formData to match CreateServiceRequest interface
+      const serviceData = {
+        name: formData.name,
+        description: formData.description,
+        slug: formData.slug,
+        waitlistTitle: formData.waitlistTitle,
+        waitlistDescription: formData.waitlistDescription,
+        waitlistBackground: formData.waitlistBackground,
+        iconImage: formData.iconImage,
+        detailImages: formData.detailImages,
+        category: formData.category,
+        tagline: formData.tagline,
+        fullDescription: formData.fullDescription,
+        developer: formData.developer,
+        language: formData.language,
+        platform: formData.platform,
+        launchDate: formData.launchDate,
+      };
+      
+      console.log('Sending service data:', serviceData);
+      const service = await waitlistService.createService(serviceData);
       
       toast({
         title: "Success",
@@ -284,31 +300,19 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="image">Service Image URL</Label>
-                  <Input
-                    id="image"
-                    type="url"
-                    placeholder="https://example.com/image.jpg"
-                    value={formData.image}
-                    onChange={(e) => handleInputChange('image', e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="icon">Icon Text (2 letters)</Label>
-                  <Input
-                    id="icon"
-                    type="text"
-                    placeholder="PA"
-                    maxLength={2}
-                    value={formData.icon}
-                    onChange={(e) => handleInputChange('icon', e.target.value.toUpperCase())}
-                    disabled={isLoading}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="iconImage">Service Icon Image URL</Label>
+                <Input
+                  id="iconImage"
+                  type="url"
+                  placeholder="https://example.com/icon.jpg"
+                  value={formData.iconImage}
+                  onChange={(e) => handleInputChange('iconImage', e.target.value)}
+                  disabled={isLoading}
+                />
+                <p className="text-sm text-muted-foreground">
+                  This will be shown as the service icon in lists and detail page header.
+                </p>
               </div>
             </TabsContent>
 
@@ -402,30 +406,18 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="rating">Initial Rating (1-5)</Label>
-                  <Input
-                    id="rating"
-                    type="number"
-                    min="1"
-                    max="5"
-                    step="0.1"
-                    value={formData.rating}
-                    onChange={(e) => handleInputChange('rating', parseFloat(e.target.value))}
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
-                <Label>Screenshots (Max 5)</Label>
+                <Label>Detail Images (Max 5)</Label>
+                <p className="text-sm text-muted-foreground">
+                  These images will be shown in the Screenshots/Preview section of the service detail page.
+                </p>
                 <div className="flex gap-2">
                   <Input
                     type="url"
-                    placeholder="Screenshot URL"
+                    placeholder="Detail Image URL"
                     value={screenshotInput}
                     onChange={(e) => setScreenshotInput(e.target.value)}
-                    disabled={isLoading || formData.screenshots.length >= 5}
+                    disabled={isLoading || formData.detailImages.length >= 5}
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -436,14 +428,14 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
                   <Button
                     type="button"
                     onClick={addScreenshot}
-                    disabled={isLoading || formData.screenshots.length >= 5}
+                    disabled={isLoading || formData.detailImages.length >= 5}
                     variant="outline"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
                 <div className="space-y-2 mt-2">
-                  {formData.screenshots.map((screenshot, index) => (
+                  {formData.detailImages.map((screenshot, index) => (
                     <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
                       <span className="text-sm flex-1 truncate">{screenshot}</span>
                       <Button

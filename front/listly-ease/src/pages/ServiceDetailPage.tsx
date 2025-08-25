@@ -24,17 +24,16 @@ interface ServiceDetail {
   name: string;
   description?: string;
   slug: string;
-  image?: string;
+  iconImage?: string; // For service icon/avatar
   category?: string;
   tagline?: string;
   fullDescription?: string;
-  icon?: string;
   participantCount: number;
   developer?: string;
   language?: string;
   platform?: string;
   launchDate?: string;
-  screenshots?: string[];
+  detailImages?: string[]; // For Screenshots/Preview section
 
   waitlistTitle?: string;
   waitlistDescription?: string;
@@ -176,16 +175,15 @@ const ServiceDetailPage = () => {
         waitlistTitle: updatedService.waitlistTitle,
         waitlistDescription: updatedService.waitlistDescription,
         waitlistBackground: '#ffffff', // Default value
-        image: updatedService.image,
+        iconImage: updatedService.iconImage,
         category: updatedService.category,
         tagline: updatedService.tagline,
         fullDescription: updatedService.fullDescription,
-        icon: updatedService.icon,
         developer: updatedService.developer,
         language: updatedService.language,
         platform: updatedService.platform,
         launchDate: updatedService.launchDate,
-        screenshots: updatedService.screenshots,
+        detailImages: updatedService.detailImages,
 
       };
       
@@ -257,16 +255,15 @@ const ServiceDetailPage = () => {
         waitlistTitle: service.waitlistTitle,
         waitlistDescription: service.waitlistDescription,
         waitlistBackground: '#ffffff', // Default value
-        image: service.image,
+        iconImage: service.iconImage,
         category: service.category,
         tagline: service.tagline,
         fullDescription: service.fullDescription,
-        icon: service.icon,
         developer: service.developer,
         language: service.language,
         platform: service.platform,
         launchDate: service.launchDate,
-        screenshots: service.screenshots,
+        detailImages: service.detailImages,
 
       };
       
@@ -367,11 +364,18 @@ const ServiceDetailPage = () => {
     );
   }
 
-  // Use service image or default based on slug
-  const serviceImage = service.image || getDefaultImage(service.slug);
-  const screenshots = service.screenshots && service.screenshots.length > 0 
-    ? service.screenshots 
-    : [serviceImage, serviceImage, serviceImage];
+  // Use service iconImage or default based on slug (for icon only)
+  const serviceImage = service.iconImage || getDefaultImage(service.slug);
+  
+  // Use detailImages or default static images for screenshots (completely independent of iconImage)
+  const getDefaultScreenshots = () => {
+    // Always use premiumAppImage as default for screenshots, regardless of iconImage
+    return [premiumAppImage, premiumAppImage, premiumAppImage];
+  };
+  
+  const screenshots = service.detailImages && service.detailImages.length > 0 
+    ? service.detailImages 
+    : getDefaultScreenshots();
 
   return (
     <div className="min-h-screen bg-background">
@@ -451,16 +455,23 @@ const ServiceDetailPage = () => {
           {/* Left: App Icon & Basic Info */}
           <div className="flex flex-col lg:flex-row gap-6 lg:flex-1">
             <div className="flex gap-6">
-              {isEditMode && canEdit && editingField === 'image' ? (
+              {isEditMode && canEdit && editingField === 'iconImage' ? (
                 <div className={`w-24 h-24 lg:w-32 lg:h-32 border-2 border-primary border-solid bg-primary/5 rounded-2xl p-2 animate-pulse ${
                   service.launchDate && new Date(service.launchDate).getTime() > new Date().getTime() 
                     ? 'mt-4' 
                     : 'mt-1'
                 }`}>
                   <ImageUpload
-                    value={service.image || ''}
-                    onChange={(value) => handleFieldEdit('image', value)}
+                    value={service.iconImage || ''}
+                    onChange={(value) => handleFieldEdit('iconImage', value)}
                     className="w-full h-full"
+                    serviceId={service.id}
+                    uploadType="icon"
+                    onUploadStart={() => setEditingField(null)}
+                    onUploadComplete={(url) => {
+                      handleFieldEdit('iconImage', url);
+                      setEditingField(null);
+                    }}
                   />
                   <div className="flex gap-2 mt-2">
                     <Button size="sm" onClick={() => setEditingField(null)} className="bg-green-600 hover:bg-green-700">
@@ -477,17 +488,17 @@ const ServiceDetailPage = () => {
                         : 'mt-1'
                     }`,
                     isEditMode && canEdit 
-                      ? editingField === 'image'
+                      ? editingField === 'iconImage'
                         ? 'border-2 border-primary border-solid bg-primary/5 rounded-2xl p-2 animate-pulse'
                         : 'border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/10 rounded-2xl p-2'
                       : ''
                   )}
-                  onClick={() => isEditMode && canEdit && setEditingField('image')}
+                  onClick={() => isEditMode && canEdit && setEditingField('iconImage')}
                 >
                   <Avatar className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl shadow-xl">
                     <AvatarImage src={serviceImage} alt={service.title || service.name} />
                     <AvatarFallback className="text-2xl font-bold bg-gradient-primary text-primary-foreground rounded-2xl">
-                      {service.icon || (service.title || service.name || service.name)?.substring(0, 2).toUpperCase()}
+                      {(service.name)?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   {isEditMode && (
@@ -603,20 +614,168 @@ const ServiceDetailPage = () => {
         {/* Screenshots Section */}
         {(
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Preview</h2>
-            <div className="flex gap-4 overflow-x-auto pb-4">
-              {screenshots.map((screenshot, index) => (
-                <div key={index} className="flex-shrink-0 w-64 lg:w-80">
-                  <div className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-lg">
-                    <img 
-                      src={screenshot} 
-                      alt={`${service.title || service.name} screenshot ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-foreground">Preview</h2>
+              {isEditMode && canEdit && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setEditingField('detailImages')}
+                  disabled={editingField === 'detailImages'}
+                >
+                  {editingField === 'detailImages' ? 'Editing...' : 'Edit Images'}
+                </Button>
+              )}
+            </div>
+            
+            {isEditMode && canEdit && editingField === 'detailImages' ? (
+              <div className="border-2 border-primary border-dashed rounded-2xl p-6 bg-primary/5 animate-pulse">
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Upload detail images for the Screenshots/Preview section. These are separate from the service icon.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[0, 1, 2].map((index) => (
+                      <div key={index} className="space-y-2">
+                        <label className="text-sm font-medium">Image {index + 1}</label>
+                        <ImageUpload
+                          value={service.detailImages?.[index] || ''}
+                          onChange={(value) => {
+                            const newDetailImages = [...(service.detailImages || [])];
+                            if (value) {
+                              newDetailImages[index] = value;
+                            } else {
+                              newDetailImages.splice(index, 1);
+                            }
+                            handleFieldEdit('detailImages', newDetailImages);
+                          }}
+                          className="aspect-[9/16] rounded-xl"
+                          serviceId={service.id}
+                          uploadType="detail"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <Button 
+                      size="sm" 
+                      onClick={() => setEditingField(null)} 
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      ✓ Done
+                    </Button>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="flex gap-4 overflow-x-auto pb-4">
+                {screenshots.map((screenshot, index) => (
+                  <div key={index} className="flex-shrink-0 w-64 lg:w-80">
+                    {isEditMode && canEdit && editingField === `detailImage-${index}` ? (
+                      <div className="aspect-[9/16] border-2 border-primary border-solid bg-primary/5 rounded-2xl p-2 animate-pulse">
+                        <ImageUpload
+                          value={service.detailImages?.[index] || ''}
+                          onChange={(value) => {
+                            const newDetailImages = [...(service.detailImages || [])];
+                            if (value) {
+                              // Ensure array is large enough
+                              while (newDetailImages.length <= index) {
+                                newDetailImages.push('');
+                              }
+                              newDetailImages[index] = value;
+                            } else if (newDetailImages[index]) {
+                              // Remove empty entries
+                              newDetailImages.splice(index, 1);
+                            }
+                            handleFieldEdit('detailImages', newDetailImages.filter(img => img.trim() !== ''));
+                          }}
+                          className="w-full h-full"
+                          serviceId={service.id}
+                          uploadType="detail"
+                          onUploadComplete={() => setEditingField(null)}
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <Button 
+                            size="sm" 
+                            onClick={() => setEditingField(null)} 
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            ✓ Done
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        className={cn(
+                          "relative aspect-[9/16] rounded-2xl overflow-hidden shadow-lg transition-all duration-300",
+                          isEditMode && canEdit 
+                            ? "border-2 border-dashed border-muted-foreground/40 cursor-pointer hover:border-primary/60 hover:bg-muted/10"
+                            : ""
+                        )}
+                        onClick={() => isEditMode && canEdit && setEditingField(`detailImage-${index}`)}
+                      >
+                        <img 
+                          src={screenshot} 
+                          alt={`${service.title || service.name} screenshot ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        {isEditMode && canEdit && (
+                          <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                            <span className="text-white text-sm font-medium">Click to edit</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                
+                {/* Add New Image Button - only show in edit mode if less than 5 images */}
+                {isEditMode && canEdit && (service.detailImages || []).length < 5 && (
+                  <div className="flex-shrink-0 w-64 lg:w-80">
+                    {editingField === 'detailImage-new' ? (
+                      <div className="aspect-[9/16] border-2 border-primary border-solid bg-primary/5 rounded-2xl p-2 animate-pulse">
+                        <ImageUpload
+                          value=""
+                          onChange={(value) => {
+                            if (value) {
+                              const newDetailImages = [...(service.detailImages || []), value];
+                              handleFieldEdit('detailImages', newDetailImages);
+                              setEditingField(null);
+                            }
+                          }}
+                          className="w-full h-full"
+                          placeholder="Add new screenshot"
+                          serviceId={service.id}
+                          uploadType="detail"
+                          onUploadComplete={() => setEditingField(null)}
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <Button 
+                            size="sm" 
+                            onClick={() => setEditingField(null)} 
+                            variant="outline"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        className="aspect-[9/16] border-2 border-dashed border-primary/40 rounded-2xl flex items-center justify-center cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all"
+                        onClick={() => setEditingField('detailImage-new')}
+                      >
+                        <div className="text-center">
+                          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-2xl text-primary">+</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground font-medium">Add Image</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 

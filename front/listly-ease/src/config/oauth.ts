@@ -1,18 +1,18 @@
 export const oauthConfig = {
   backend: {
-    baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3001",
+    baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000",
   },
   google: {
     clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID",
     // Backend OAuth endpoints
-    authUrl: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}/auth/google`,
-    callbackUrl: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}/auth/google/callback`,
+    authUrl: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}/auth/google`,
+    callbackUrl: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}/auth/google/callback`,
   },
   github: {
     clientId: import.meta.env.VITE_GITHUB_CLIENT_ID || "YOUR_GITHUB_CLIENT_ID",
     // Backend OAuth endpoints
-    authUrl: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}/auth/github`,
-    callbackUrl: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}/auth/github/callback`,
+    authUrl: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}/auth/github`,
+    callbackUrl: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}/auth/github/callback`,
     scope: "user:email",
   },
 };

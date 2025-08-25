@@ -8,17 +8,15 @@ export interface Service {
   waitlistTitle?: string;
   waitlistDescription?: string;
   waitlistBackground?: string;
-  image?: string;
+  iconImage?: string; // For service icon/avatar
   category?: string;
   tagline?: string;
   fullDescription?: string;
-  icon?: string;
   developer?: string;
   language?: string;
   platform?: string;
   launchDate?: string;
-  screenshots?: string[];
-  rating?: number;
+  detailImages?: string[]; // For Screenshots/Preview section
   waitlistUrl: string;
   participantCount: number;
   createdAt: string;
@@ -32,6 +30,15 @@ export interface CreateServiceRequest {
   waitlistTitle?: string;
   waitlistDescription?: string;
   waitlistBackground?: string;
+  iconImage?: string; // For service icon/avatar
+  detailImages?: string[]; // For Screenshots/Preview section
+  category?: string;
+  tagline?: string;
+  fullDescription?: string;
+  developer?: string;
+  language?: string;
+  platform?: string;
+  launchDate?: string;
 }
 
 export interface UpdateServiceRequest {
@@ -41,6 +48,15 @@ export interface UpdateServiceRequest {
   waitlistTitle?: string;
   waitlistDescription?: string;
   waitlistBackground?: string;
+  iconImage?: string; // For service icon/avatar
+  detailImages?: string[]; // For Screenshots/Preview section
+  category?: string;
+  tagline?: string;
+  fullDescription?: string;
+  developer?: string;
+  language?: string;
+  platform?: string;
+  launchDate?: string;
 }
 
 // Public waitlist types
