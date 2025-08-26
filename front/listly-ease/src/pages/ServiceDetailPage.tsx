@@ -89,7 +89,6 @@ const ServiceDetailPage = () => {
 
         
         // Try private API first (includes organizerId) - only if authenticated
-        let response;
         let data;
         
         // Only try private API if user is authenticated
@@ -118,7 +117,7 @@ const ServiceDetailPage = () => {
         
         // Fall back to public API
         console.log("Falling back to public API...");
-        response = await fetch(`/api/public/services/${slug}`);
+        const response = await fetch(`/api/public/services/${slug}`);
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -143,7 +142,12 @@ const ServiceDetailPage = () => {
     fetchService();
   }, [slug, isAuthenticated, authLoading]);
 
-  const validateField = useCallback((field: string, value: any): string | null => {
+  const validateField = useCallback((field: string, value: string | string[]): string | null => {
+    if (Array.isArray(value)) {
+      // Handle array values (categories, platforms, languages)
+      return null; // Arrays don't need validation in this context
+    }
+    
     switch (field) {
       case 'title':
         if (!value || value.trim().length === 0) return 'Title is required';
@@ -226,7 +230,7 @@ const ServiceDetailPage = () => {
     }
   }, [hasUnsavedChanges, isSaving, toast]);
 
-  const handleFieldEdit = useCallback((field: string, value: any) => {
+  const handleFieldEdit = useCallback((field: string, value: string | string[]) => {
     if (!service) return;
     
     // Validate the field
@@ -433,13 +437,13 @@ const ServiceDetailPage = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="glass border-b border-border/50 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
+        <div className="responsive-container max-w-6xl">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <Link to="/" className="flex items-center space-x-1 sm:space-x-2 text-muted-foreground hover:text-foreground transition-colors touch-friendly">
               <ArrowLeft className="h-4 w-4" />
-              <span>Back</span>
+              <span className="hidden sm:inline">Back</span>
             </Link>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {isEditMode ? (
                 <>
                   <div className="flex items-center space-x-2 text-sm">
@@ -501,9 +505,9 @@ const ServiceDetailPage = () => {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="responsive-container max-w-6xl py-6 sm:py-8">
         {/* App Store Style Header */}
-        <div className="flex flex-col lg:flex-row gap-8 mb-8">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 mb-6 sm:mb-8">
           {/* Left: App Icon & Basic Info */}
           <div className="flex flex-col lg:flex-row gap-6 lg:flex-1">
             <div className="flex gap-6">

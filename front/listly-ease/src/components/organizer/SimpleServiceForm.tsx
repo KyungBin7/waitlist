@@ -130,14 +130,14 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
 
   return (
     <Card className="glass max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Create New Service</CardTitle>
-        <CardDescription>
+      <CardHeader className="responsive-padding">
+        <CardTitle className="responsive-text-xl">Create New Service</CardTitle>
+        <CardDescription className="responsive-text-base">
           Get started with the basics - you can edit everything else directly on the service page
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <CardContent className="responsive-padding">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
@@ -145,7 +145,7 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="name">Service Name *</Label>
+            <Label htmlFor="name" className="responsive-text-sm font-medium">Service Name *</Label>
             <Input
               id="name"
               type="text"
@@ -153,12 +153,13 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
               disabled={isLoading}
+              className="touch-friendly-md"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="slug">URL Slug *</Label>
+            <Label htmlFor="slug" className="responsive-text-sm font-medium">URL Slug *</Label>
             <Input
               id="slug"
               type="text"
@@ -166,27 +167,29 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
               value={formData.slug}
               onChange={(e) => handleInputChange('slug', e.target.value)}
               disabled={isLoading}
+              className="touch-friendly-md"
               required
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="responsive-text-sm text-muted-foreground">
               URL: /service/{formData.slug}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Brief Description</Label>
+            <Label htmlFor="description" className="responsive-text-sm font-medium">Brief Description</Label>
             <Textarea
               id="description"
               placeholder="Describe your service in a few sentences..."
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               disabled={isLoading}
+              className="min-h-[88px] sm:min-h-[72px]"
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Categories (Max 3)</Label>
+            <Label className="responsive-text-sm font-medium">Categories (Max 3)</Label>
             <CategorySelector
               value={formData.categories}
               onChange={(value) => handleInputChange('categories', value)}
@@ -194,7 +197,7 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
               placeholder="Select up to 3 categories..."
               maxSelections={3}
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="responsive-text-sm text-muted-foreground">
               Choose categories that best describe your service to help users discover it.
             </p>
           </div>
@@ -206,25 +209,26 @@ export function SimpleServiceForm({ onSuccess, onCancel }: SimpleServiceFormProp
             disabled={isLoading}
             placeholder="Select launch date and time with timezone"
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="responsive-text-sm text-muted-foreground">
             Set when your service will launch globally. The time will be converted to UTC for storage and displayed in each user's local timezone.
           </p>
 
-          <div className="bg-muted/50 p-4 rounded-lg">
-            <h4 className="font-medium text-sm mb-2">What happens next?</h4>
-            <p className="text-sm text-muted-foreground">
+          <div className="bg-muted/50 responsive-padding rounded-lg">
+            <h4 className="font-medium responsive-text-sm mb-2">What happens next?</h4>
+            <p className="responsive-text-sm text-muted-foreground">
               After creating your service, you'll be taken to the live preview page where you can 
               edit everything directly - add images, detailed descriptions, set categories, and more!
             </p>
           </div>
 
-          <div className="flex gap-4 pt-2">
-            <Button type="submit" disabled={isLoading} className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
+            <Button type="submit" disabled={isLoading} className="flex-1 touch-friendly-lg">
               {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Create & Start Editing
+              <span className="hidden sm:inline">Create & Start Editing</span>
+              <span className="sm:hidden">Create Service</span>
             </Button>
             {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+              <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading} className="touch-friendly-lg sm:w-auto">
                 Cancel
               </Button>
             )}

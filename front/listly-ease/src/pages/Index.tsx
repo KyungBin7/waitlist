@@ -172,42 +172,47 @@ const Index = () => {
       
       {/* Navigation */}
       <nav className="glass border-b border-border/50 fixed top-0 left-0 right-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="responsive-container">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-foreground">
+              <h1 className="text-lg sm:text-xl font-bold text-foreground">
                 Minimal Waitlist
               </h1>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {authLoading ? (
                 // Show loading state while checking auth
                 <div className="h-9 w-32 bg-muted/50 rounded animate-pulse" />
               ) : isAuthenticated ? (
                 // Show authenticated user options
                 <>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="hidden sm:inline text-sm text-muted-foreground">
                     Welcome, {user?.email?.split('@')[0]}
                   </span>
-                  <Button variant="ghost" asChild>
+                  <Button variant="ghost" size="sm" className="touch-friendly-sm" asChild>
                     <Link to="/dashboard">
-                      <LayoutDashboard className="h-4 w-4 mr-2" />
-                      Dashboard
+                      <LayoutDashboard className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Dashboard</span>
                     </Link>
                   </Button>
-                  <Button variant="ghost" onClick={logout}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                  <Button variant="ghost" size="sm" className="touch-friendly-sm" onClick={logout}>
+                    <LogOut className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Sign Out</span>
                   </Button>
                 </>
               ) : (
                 // Show login/signup options for unauthenticated users
                 <>
-                  <Button variant="ghost" asChild>
-                    <Link to="/login">Organizer Login</Link>
+                  <Button variant="ghost" size="sm" className="touch-friendly-sm" asChild>
+                    <Link to="/login">
+                      <span className="hidden sm:inline">Organizer </span>Login
+                    </Link>
                   </Button>
-                  <Button asChild>
-                    <Link to="/signup">Create Waitlist</Link>
+                  <Button size="sm" className="touch-friendly-sm" asChild>
+                    <Link to="/signup">
+                      <span className="hidden sm:inline">Create Waitlist</span>
+                      <span className="sm:hidden">Sign Up</span>
+                    </Link>
                   </Button>
                 </>
               )}
@@ -217,18 +222,18 @@ const Index = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="relative z-10 pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="relative z-10 pt-14 sm:pt-16">
+        <div className="responsive-container py-8 sm:py-12">
           {/* Header */}
-          <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8 sm:mb-12 animate-fade-in">
+            <h1 className="responsive-text-4xl lg:text-5xl font-bold text-foreground mb-4">
               Discover Amazing
               <br />
               <span className="bg-gradient-primary bg-clip-text text-transparent">
                 Upcoming Projects
               </span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="responsive-text-lg text-muted-foreground max-w-2xl mx-auto px-4">
               Join waitlists for the most exciting new products and services. Be the first to know when they launch.
             </p>
           </div>
@@ -280,26 +285,27 @@ const Index = () => {
           </div>
 
           {/* Main Category Tabs */}
-          <div className="flex justify-center mb-8 animate-fade-in overflow-x-auto">
-            <div className="flex bg-white/90 dark:bg-card/90 rounded-2xl p-1 shadow-lg backdrop-blur-sm border border-border/30 min-w-fit">
+          <div className="flex justify-center mb-6 sm:mb-8 animate-fade-in overflow-x-auto px-2 sm:px-0">
+            <div className="flex bg-white/90 dark:bg-card/90 rounded-xl sm:rounded-2xl p-1 shadow-lg backdrop-blur-sm border border-border/30 min-w-fit">
               <button
                 onClick={() => setSelectedMainCategory('all')}
                 className={`
-                  px-6 py-3 rounded-xl font-medium text-sm transition-all duration-300
+                  px-3 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm transition-all duration-300 touch-friendly
                   ${selectedMainCategory === 'all'
                     ? 'bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md'
                     : 'text-foreground hover:bg-white/50 dark:hover:bg-card/50'
                   }
                 `}
               >
-                All Categories
+                <span className="hidden sm:inline">All Categories</span>
+                <span className="sm:hidden">All</span>
               </button>
               {CATEGORY_CONFIG.map((category, index) => (
                 <button
                   key={category.id}
                   onClick={() => setSelectedMainCategory(category.id)}
                   className={`
-                    px-6 py-3 rounded-xl font-medium text-sm transition-all duration-300 whitespace-nowrap
+                    px-3 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm transition-all duration-300 whitespace-nowrap touch-friendly
                     ${selectedMainCategory === category.id
                       ? 'bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md'
                       : 'text-foreground hover:bg-white/50 dark:hover:bg-card/50'
@@ -320,14 +326,14 @@ const Index = () => {
           {/* Sub Category Filter Buttons */}
           <div 
             key={`subcategories-${selectedMainCategory}`}
-            className="flex flex-wrap justify-center gap-3 mb-12 animate-fade-in"
+            className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 sm:mb-12 animate-fade-in px-2 sm:px-0"
           >
             {availableSubCategories.map((subcategory, index) => (
               <button
                 key={subcategory}
                 onClick={() => setSelectedSubCategory(subcategory)}
                 className={`
-                  relative px-5 py-2 rounded-full font-medium text-sm
+                  relative px-4 sm:px-5 py-2 rounded-full font-medium text-xs sm:text-sm touch-friendly
                   transition-all duration-300 transform hover:scale-105
                   ${selectedSubCategory === subcategory 
                     ? 'bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-lg shadow-primary/30 scale-105' 
@@ -361,7 +367,7 @@ const Index = () => {
           {filteredWaitlists.length > 0 ? (
             <div 
               key={animationKey}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              className="responsive-grid-cols-3 px-2 sm:px-0"
             >
               {filteredWaitlists.map((waitlist, index) => (
                 <Card 
@@ -519,9 +525,9 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 glass border-t border-border/50 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-sm text-muted-foreground">
+      <footer className="relative z-10 glass border-t border-border/50 mt-12 sm:mt-16">
+        <div className="responsive-container py-6 sm:py-8">
+          <div className="text-center responsive-text-sm text-muted-foreground">
             © 2024 Minimal Waitlist. Discover and join amazing upcoming projects.
           </div>
         </div>

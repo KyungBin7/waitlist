@@ -405,6 +405,7 @@ export function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
                     disabled={isLoading}
                   />
                 </div>
+              </div>
 
               <div className="space-y-2">
                 <Label>Detail Images (Max 5)</Label>

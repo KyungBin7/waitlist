@@ -35,45 +35,46 @@ export function WaitlistJoinForm({
 
   if (isJoined) {
     return (
-      <div className="text-center animate-fade-in">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-          <CheckCircle className="w-8 h-8 text-green-600" />
+      <div className="text-center animate-fade-in px-4">
+        <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-green-100 mb-4">
+          <CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" />
         </div>
-        <h3 className="text-2xl font-semibold text-foreground mb-2">
+        <h3 className="responsive-text-2xl font-semibold text-foreground mb-2">
           You're on the list!
         </h3>
-        <p className="text-muted-foreground mb-6">
+        <p className="responsive-text-base text-muted-foreground mb-6">
           We'll notify you when {waitlistTitle} is ready.
         </p>
         <Button 
           variant="outline" 
           onClick={() => setIsJoined(false)}
-          className="text-sm"
+          className="touch-friendly-md responsive-text-sm"
         >
-          Join Another Waitlist
+          <span className="hidden sm:inline">Join Another Waitlist</span>
+          <span className="sm:hidden">Join Another</span>
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto text-center animate-slide-up">
-      <h1 className="text-4xl font-bold text-foreground mb-4">
+    <div className="w-full max-w-md mx-auto text-center animate-slide-up px-4">
+      <h1 className="responsive-text-4xl font-bold text-foreground mb-4">
         {waitlistTitle}
       </h1>
-      <p className="text-lg text-muted-foreground mb-8">
+      <p className="responsive-text-lg text-muted-foreground mb-6 sm:mb-8">
         {waitlistDescription}
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         <div className="relative">
-          <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground z-10" />
+          <Mail className="absolute left-3 sm:left-4 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-muted-foreground z-10" />
           <Input
             type="email"
             placeholder="Enter your email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="pl-12 pr-4 h-16 text-lg rounded-2xl bg-background/90 backdrop-blur-sm border-2 border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 placeholder:text-muted-foreground/60 text-left"
+            className="pl-10 sm:pl-12 pr-4 h-12 sm:h-16 responsive-text-base sm:text-lg rounded-xl sm:rounded-2xl bg-background/90 backdrop-blur-sm border-2 border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 placeholder:text-muted-foreground/60 text-left"
             required
           />
         </div>
@@ -82,14 +83,14 @@ export function WaitlistJoinForm({
           type="submit" 
           variant="hero" 
           size="xl"
-          className="w-full"
+          className="w-full touch-friendly-lg"
           disabled={isLoading}
         >
           {isLoading ? "Joining..." : "Join Waitlist"}
         </Button>
       </form>
 
-      <p className="text-xs text-muted-foreground mt-6">
+      <p className="responsive-text-sm text-muted-foreground mt-4 sm:mt-6">
         No spam, ever. Unsubscribe anytime.
       </p>
     </div>

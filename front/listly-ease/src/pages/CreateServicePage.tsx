@@ -19,18 +19,19 @@ export default function CreateServicePage() {
     <div className="min-h-screen bg-gradient-hero">
       {/* Header */}
       <header className="glass border-b border-border/50 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <Button variant="ghost" size="sm" onClick={handleCancel}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+        <div className="responsive-container max-w-7xl">
+          <div className="flex items-center h-14 sm:h-16">
+            <Button variant="ghost" size="sm" className="touch-friendly-sm" onClick={handleCancel}>
+              <ArrowLeft className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
             </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="responsive-container max-w-7xl py-6 sm:py-8">
         <div className="animate-fade-in">
           <SimpleServiceForm onSuccess={handleSuccess} onCancel={handleCancel} />
         </div>

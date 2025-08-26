@@ -65,7 +65,7 @@ export function SocialLoginButton({
       onClick={onClick}
       disabled={isLoading}
       className={cn(
-        "w-full flex items-center justify-center gap-2",
+        "w-full flex items-center justify-center gap-2 touch-friendly-md",
         "border-border/40 hover:bg-accent/10",
         "transition-colors duration-200",
         className

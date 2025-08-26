@@ -22,11 +22,11 @@ const buttonVariants = cva(
         hero: "bg-gradient-primary text-primary-foreground px-8 py-4 text-lg font-semibold rounded-2xl hover:shadow-xl hover:-translate-y-1 animate-glow"
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-lg px-3",
-        lg: "h-12 rounded-xl px-8 text-base",
-        xl: "h-14 rounded-2xl px-10 text-lg",
-        icon: "h-10 w-10",
+        default: "touch-friendly-md px-4 py-2",
+        sm: "touch-friendly-sm rounded-lg px-3",
+        lg: "touch-friendly-lg rounded-xl px-8 text-base",
+        xl: "h-12 sm:h-14 rounded-2xl px-10 text-lg",
+        icon: "touch-friendly w-11 sm:w-10",
       },
     },
     defaultVariants: {

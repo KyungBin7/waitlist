@@ -88,12 +88,12 @@ export default function WaitlistPage() {
 
   if (error || !waitlistData) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+      <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="text-center max-w-md mx-auto">
+          <h1 className="responsive-text-2xl font-bold text-foreground mb-4">
             Waitlist Not Found
           </h1>
-          <p className="text-muted-foreground">
+          <p className="responsive-text-base text-muted-foreground">
             The waitlist you're looking for doesn't exist or has been removed.
           </p>
         </div>
@@ -102,12 +102,12 @@ export default function WaitlistPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
       {/* Back button */}
       <Button
         variant="ghost"
         size="icon"
-        className="absolute top-4 left-4 z-20 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+        className="absolute top-4 left-4 z-20 bg-background/80 backdrop-blur-sm hover:bg-background/90 touch-friendly"
         onClick={() => navigate(-1)}
       >
         <ArrowLeft className="h-4 w-4" />
@@ -125,7 +125,7 @@ export default function WaitlistPage() {
       <div className="absolute inset-0 bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-sm" />
       
       {/* Content */}
-      <div className="relative z-10 w-full max-w-2xl">
+      <div className="relative z-10 w-full max-w-xs sm:max-w-sm md:max-w-lg lg:max-w-2xl">
         <WaitlistJoinForm
           waitlistTitle={waitlistData.title}
           waitlistDescription={waitlistData.description}
@@ -133,20 +133,21 @@ export default function WaitlistPage() {
         />
         
         {/* Participant Count */}
-        <div className="text-center mt-8 animate-fade-in">
-          <p className="text-sm text-muted-foreground">
+        <div className="text-center mt-6 sm:mt-8 animate-fade-in">
+          <p className="responsive-text-sm text-muted-foreground">
             <span className="font-semibold text-primary">
               {waitlistData.currentParticipants.toLocaleString()}
             </span>{" "}
-            people have already joined
+            <span className="hidden sm:inline">people have already joined</span>
+            <span className="sm:hidden">joined</span>
           </p>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center px-4">
         <p className="text-xs text-muted-foreground">
-          Powered by{" "}
+          <span className="hidden sm:inline">Powered by </span>
           <span className="text-primary font-medium">Minimal Waitlist</span>
         </p>
       </div>

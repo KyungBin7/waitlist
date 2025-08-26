@@ -91,27 +91,27 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-hero">
       {/* Header */}
       <header className="glass border-b border-border/50 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-xl font-semibold text-foreground">
+        <div className="responsive-container">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <h1 className="text-lg sm:text-xl font-semibold text-foreground">
               Minimal Waitlist
             </h1>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" asChild>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Button variant="ghost" size="sm" className="touch-friendly-sm" asChild>
                 <Link to="/">
-                  <Home className="h-4 w-4 mr-2" />
-                  Go Home
+                  <Home className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Go Home</span>
                 </Link>
               </Button>
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="ghost" size="sm" className="touch-friendly-sm" asChild>
                 <Link to="/settings">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
+                  <Settings className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Settings</span>
                 </Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+              <Button variant="ghost" size="sm" className="touch-friendly-sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sign Out</span>
               </Button>
             </div>
           </div>
@@ -119,14 +119,14 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
+      <main className="responsive-container py-6 sm:py-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Welcome Section */}
-          <div className="text-center animate-fade-in">
-            <h2 className="text-3xl font-bold text-foreground mb-2">
+          <div className="text-center animate-fade-in px-4">
+            <h2 className="responsive-text-3xl font-bold text-foreground mb-2">
               Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
             </h2>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground responsive-text-lg">
               Manage your waitlists and track participant growth
             </p>
           </div>
@@ -135,8 +135,8 @@ export default function DashboardPage() {
           <DashboardStats {...stats} />
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
-            <Button size="lg" className="min-w-[200px]" asChild>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in px-4 sm:px-0">
+            <Button size="lg" className="w-full sm:w-auto sm:min-w-[200px] touch-friendly-lg" asChild>
               <Link to="/create-service">
                 <Plus className="h-5 w-5 mr-2" />
                 Create New Service
@@ -162,9 +162,9 @@ export default function DashboardPage() {
           )}
 
           {/* Services List */}
-          <div className="space-y-6 animate-slide-up">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-semibold text-foreground">
+          <div className="space-y-4 sm:space-y-6 animate-slide-up">
+            <div className="flex items-center justify-between px-4 sm:px-0">
+              <h3 className="responsive-text-2xl font-semibold text-foreground">
                 Your Services
               </h3>
               {isLoading && (
@@ -189,7 +189,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="responsive-grid-cols-3 px-2 sm:px-0">
                 {services.map((service, index) => (
                   <Card key={service.id} className="glass shadow-card-premium animate-fade-in hover:shadow-glass transition-all duration-300 hover:-translate-y-1" style={{animationDelay: `${index * 0.1}s`}}>
                     <CardHeader>
